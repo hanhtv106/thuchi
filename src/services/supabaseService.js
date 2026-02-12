@@ -107,31 +107,54 @@ const supabaseService = {
     async getAllUsers() { return this.getAll('users'); },
 
     async addUser(user) {
-        // 1. Tao tai khoan Auth (dung Admin Client)
-        const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
-            email: user.email,
-            password: user.password,
-            email_confirm: true
-        });
+        try {
+            // 1. Kiem tra xem email da ton tai trong Auth chua
+            const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+            const existingUser = existingUsers?.users?.find(u => u.email === user.email);
 
-        if (authError) throw authError;
+            if (existingUser) {
+                // Xoa user cu trong Auth (orphaned user - user ko co trong bang users)
+                const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
+                if (deleteError) {
+                    throw new Error(`Không thể xóa tài khoản cũ: ${deleteError.message}`);
+                }
+            }
 
-        // 2. Luu ho so vao bang users (Chi lay cac truong hop le)
-        const profileData = {
-            id: authUser.user.id,
-            email: user.email,
-            fullName: user.fullName,
-            role: user.role
-        };
+            // 2. Tao tai khoan Auth moi (dung Admin Client)
+            const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
+                email: user.email,
+                password: user.password,
+                email_confirm: true
+            });
 
-        const { data, error } = await supabase
-            .from('users')
-            .insert(profileData)
-            .select()
-            .single();
+            if (authError) {
+                // Xu ly cac loi thuong gap
+                if (authError.message.includes('already been registered')) {
+                    throw new Error(`Email "${user.email}" đã được sử dụng. Vui lòng chọn email khác hoặc kiểm tra danh sách người dùng.`);
+                }
+                throw new Error(authError.message);
+            }
 
-        if (error) throw error;
-        return data;
+            // 3. Luu ho so vao bang users (Chi lay cac truong hop le)
+            const profileData = {
+                id: authUser.user.id,
+                email: user.email,
+                fullName: user.fullName,
+                role: user.role
+            };
+
+            const { data, error } = await supabase
+                .from('users')
+                .insert(profileData)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            // Re-throw error voi thong bao ro rang
+            throw error;
+        }
     },
 
     async updateUser(user) {

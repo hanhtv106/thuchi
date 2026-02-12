@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import supabaseService from '../services/supabaseService';
+import { useNotification } from '../context/NotificationContext';
 import { Trash2, Edit, Plus, User, Shield, Lock, Save, X, CheckSquare, Square } from 'lucide-react';
 import './AdminRBAC.css';
 
@@ -9,6 +10,7 @@ const AdminRBAC = () => {
     const [roles, setRoles] = useState([]);
     const [permissions, setPermissions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { showNotification } = useNotification();
 
     // Form States
     const [isEditing, setIsEditing] = useState(false);
@@ -59,13 +61,15 @@ const AdminRBAC = () => {
         try {
             if (currentUser) {
                 await supabaseService.updateUser(formData);
+                showNotification('Cập nhật người dùng thành công!');
             } else {
                 await supabaseService.addUser(formData);
+                showNotification('Thêm người dùng mới thành công!');
             }
             setIsEditing(false);
             loadData();
         } catch (error) {
-            alert('Lỗi: ' + error.message);
+            showNotification(error.message, 'error');
         }
     };
 
