@@ -143,11 +143,24 @@ const AdminRBAC = () => {
         });
     };
 
-    // Group permissions
+    // Group permissions by module based on code prefix
     const groupedPermissions = permissions.reduce((acc, curr) => {
-        const group = curr.group || 'Khác';
-        if (!acc[group]) acc[group] = [];
-        acc[group].push(curr);
+        // Xác định nhóm dựa vào prefix của code
+        let groupName = 'Khác';
+        if (curr.code.startsWith('TRANSACTION_')) {
+            groupName = '📊 Thu Chi';
+        } else if (curr.code.startsWith('SETTLEMENT_')) {
+            groupName = '💰 Tất toán';
+        } else if (curr.code.startsWith('REPORT_')) {
+            groupName = '📈 Báo cáo';
+        } else if (curr.code.startsWith('MASTER_')) {
+            groupName = '📁 Quản lý dữ liệu';
+        } else if (curr.code.startsWith('RBAC_')) {
+            groupName = '👥 Phân quyền';
+        }
+
+        if (!acc[groupName]) acc[groupName] = [];
+        acc[groupName].push(curr);
         return acc;
     }, {});
 
