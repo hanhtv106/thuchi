@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useTransactions } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext';
 import { X, Upload, Plus } from 'lucide-react';
 import clsx from 'clsx';
 import './TransactionForm.css'; // We'll create this
 
 const TransactionForm = ({ onClose, initialData }) => {
-    const { addTransaction, updateTransaction, categories, units, partners } = useTransactions();
+    const { addTransaction, updateTransaction, categories, units, partners, uploadFile } = useTransactions();
     const { user } = useAuth();
-
+    const { showNotification } = useNotification();
+    const [isUploading, setIsUploading] = useState(false);
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
         type: 'expense',
@@ -20,23 +22,21 @@ const TransactionForm = ({ onClose, initialData }) => {
         amount: 0,
         partner: '',
         receiver: '',
-        attachments: [] // Placeholder for file logic
+        attachments: []
     });
 
     useEffect(() => {
         if (initialData) {
             setFormData({
                 ...initialData,
-                date: initialData.date.split('T')[0] // Format for input type=date
+                date: initialData.date.split('T')[0]
             });
         } else {
-            // Set default category for type
             const firstCat = categories.find(c => c.type === formData.type);
             if (firstCat) setFormData(prev => ({ ...prev, categoryId: firstCat.id }));
         }
     }, [initialData, categories, formData.type]);
 
-    // Auto calculate amount
     useEffect(() => {
         const amount = (parseFloat(formData.quantity) || 0) * (parseFloat(formData.unitPrice) || 0);
         setFormData(prev => ({ ...prev, amount }));
@@ -47,39 +47,100 @@ const TransactionForm = ({ onClose, initialData }) => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // Compress image before upload
+    const compressImage = (file) => {
+        return new Promise((resolve) => {
+            if (!file.type.startsWith('image/')) {
+                resolve(file); // Don't compress non-images
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX_WIDTH = 1200;
+
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        const compressedFile = new File([blob], file.name, { type: 'image/jpeg' });
+                        resolve(compressedFile);
+                    }, 'image/jpeg', 0.7); // 70% quality
+                };
+            };
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsUploading(true);
         try {
+            // 1. Upload new attachments
+            const finalAttachments = await Promise.all(
+                (formData.attachments || []).map(async (att) => {
+                    if (att.isNew && att.file) {
+                        const url = await uploadFile(att.file);
+                        return { name: att.name, type: att.type, data: url };
+                    }
+                    return att; // Keep existing
+                })
+            );
+
+            const dataToSave = { ...formData, attachments: finalAttachments };
+
+            // 2. Save transaction
             if (initialData) {
-                // Security check for approved transactions
                 if (initialData.status === 'approved' && user.role !== 'admin') {
-                    alert('Bạn không có quyền chỉnh sửa phiếu đã duyệt!');
+                    showNotification('Bạn không có quyền chỉnh sửa phiếu đã duyệt!', 'error');
                     return;
                 }
-                await updateTransaction(initialData.id, formData);
+                await updateTransaction(initialData.id, dataToSave);
+                showNotification('Cập nhật giao dịch thành công!');
             } else {
-                await addTransaction(formData);
+                await addTransaction(dataToSave);
+                showNotification('Tạo giao dịch mới thành công!');
             }
             onClose();
         } catch (error) {
-            alert('Lỗi: ' + error.message);
+            showNotification('Lỗi: ' + error.message, 'error');
+        } finally {
+            setIsUploading(false);
         }
     };
 
-    const handleFileChange = (e) => {
+    const handleFileChange = async (e) => {
         const files = Array.from(e.target.files);
         if (files.length > 0) {
-            // Convert to Base64
-            Promise.all(files.map(file => {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve({ name: file.name, type: file.type, data: reader.result });
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
-            })).then(results => {
-                setFormData(prev => ({ ...prev, attachments: [...(prev.attachments || []), ...results] }));
-            });
+            const newAttachments = await Promise.all(
+                files.map(async (file) => {
+                    const compressed = await compressImage(file);
+                    return {
+                        name: file.name,
+                        type: file.type,
+                        file: compressed, // Binary for upload
+                        data: URL.createObjectURL(compressed), // Preview URL
+                        isNew: true
+                    };
+                })
+            );
+            setFormData(prev => ({
+                ...prev,
+                attachments: [...(prev.attachments || []), ...newAttachments]
+            }));
         }
     };
 
@@ -189,7 +250,11 @@ const TransactionForm = ({ onClose, initialData }) => {
                             <select name="partner" value={formData.partner} onChange={handleChange}>
                                 <option value="">-- Chọn đối tác --</option>
                                 {partners
-                                    .filter(p => !p.type || (formData.type === 'income' ? p.type === 'customer' : p.type === 'supplier'))
+                                    .filter(p => {
+                                        if (!p.type) return true; // Hiển thị nếu không có loại (dữ liệu cũ)
+                                        if (p.type === 'both') return true; // Hiển thị nếu là cả hai
+                                        return formData.type === 'income' ? p.type === 'customer' : p.type === 'supplier';
+                                    })
                                     .map(p => (
                                         <option key={p.id} value={p.name}>{p.name}</option>
                                     ))}
@@ -216,8 +281,10 @@ const TransactionForm = ({ onClose, initialData }) => {
                     </div>
 
                     <div className="form-actions">
-                        <button type="button" onClick={onClose} className="btn-secondary">Hủy bỏ</button>
-                        <button type="submit" className="btn-primary">Lưu phiếu</button>
+                        <button type="button" onClick={onClose} className="btn-secondary" disabled={isUploading}>Hủy bỏ</button>
+                        <button type="submit" className="btn-primary" disabled={isUploading}>
+                            {isUploading ? 'Đang lưu...' : (initialData ? 'Cập nhật' : 'Lưu phiếu')}
+                        </button>
                     </div>
                 </form>
             </div>

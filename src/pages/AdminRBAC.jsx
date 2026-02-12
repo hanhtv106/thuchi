@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { dbService } from '../services/db';
+import supabaseService from '../services/supabaseService';
 import { Trash2, Edit, Plus, User, Shield, Lock, Save, X, CheckSquare, Square } from 'lucide-react';
 import './AdminRBAC.css';
 
@@ -27,9 +27,9 @@ const AdminRBAC = () => {
         setIsLoading(true);
         try {
             const [u, r, p] = await Promise.all([
-                dbService.getAllUsers(),
-                dbService.getAllRoles(),
-                dbService.getAllPermissions()
+                supabaseService.getAllUsers(),
+                supabaseService.getAllRoles(),
+                supabaseService.getAllPermissions()
             ]);
             setUsers(u);
             setRoles(r);
@@ -44,7 +44,7 @@ const AdminRBAC = () => {
     // --- User Handlers ---
     const handleAddUser = () => {
         setCurrentUser(null);
-        setFormData({ username: '', password: '', fullName: '', role: 'employee' });
+        setFormData({ email: '', password: '', fullName: '', role: 'employee' });
         setIsEditing(true);
     };
 
@@ -58,9 +58,9 @@ const AdminRBAC = () => {
         e.preventDefault();
         try {
             if (currentUser) {
-                await dbService.updateUser(formData);
+                await supabaseService.updateUser(formData);
             } else {
-                await dbService.addUser({ ...formData, id: crypto.randomUUID() });
+                await supabaseService.addUser(formData);
             }
             setIsEditing(false);
             loadData();
@@ -71,7 +71,7 @@ const AdminRBAC = () => {
 
     const handleDeleteUser = async (id) => {
         if (window.confirm('Xóa người dùng này?')) {
-            await dbService.deleteUser(id);
+            await supabaseService.deleteUser(id);
             loadData();
         }
     };
@@ -89,7 +89,7 @@ const AdminRBAC = () => {
         setFormData({ ...role });
 
         // Fetch existing permissions for this role
-        const assigned = await dbService.getPermissionsByRole(role.id);
+        const assigned = await supabaseService.getPermissionsByRole(role.id);
         const assignedIds = assigned.map(a => a.permissionId);
         setRolePermissions(assignedIds);
 
@@ -100,14 +100,14 @@ const AdminRBAC = () => {
         e.preventDefault();
         try {
             if (currentRole) {
-                await dbService.updateRole(formData);
+                await supabaseService.updateRole(formData);
             } else {
-                await dbService.addRole(formData);
+                await supabaseService.addRole(formData);
             }
 
             // Save Permissions
             const roleId = currentRole ? currentRole.id : formData.id;
-            await dbService.updateRolePermissions(roleId, rolePermissions);
+            await supabaseService.updateRolePermissions(roleId, rolePermissions);
 
             setIsEditing(false);
             loadData();
@@ -122,7 +122,7 @@ const AdminRBAC = () => {
             return;
         }
         if (window.confirm('Xóa vai trò này?')) {
-            await dbService.deleteRole(id);
+            await supabaseService.deleteRole(id);
             loadData();
         }
     };
@@ -170,19 +170,33 @@ const AdminRBAC = () => {
                         <div className="section-header">
                             <h2>Danh sách Người dùng</h2>
                             {!isEditing && (
-                                <button onClick={handleAddUser} className="btn btn-primary">
-                                    <Plus size={16} /> Thêm người dùng
-                                </button>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button
+                                        onClick={async () => {
+                                            if (window.confirm('Khởi tạo dữ liệu hệ thống mẫu lên Supabase?')) {
+                                                await supabaseService.seedData();
+                                                loadData();
+                                            }
+                                        }}
+                                        className="btn btn-secondary"
+                                    >
+                                        Khởi tạo dữ liệu
+                                    </button>
+                                    <button onClick={handleAddUser} className="btn btn-primary">
+                                        <Plus size={16} /> Thêm người dùng
+                                    </button>
+                                </div>
                             )}
                         </div>
 
                         {isEditing ? (
                             <form onSubmit={handleSaveUser} className="rbac-form">
                                 <div className="form-group">
-                                    <label>Tên đăng nhập</label>
+                                    <label>Email</label>
                                     <input
-                                        value={formData.username}
-                                        onChange={e => setFormData({ ...formData, username: e.target.value })}
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
                                         required
                                         disabled={!!currentUser}
                                     />
@@ -225,7 +239,7 @@ const AdminRBAC = () => {
                             <table className="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Username</th>
+                                        <th>Email</th>
                                         <th>Họ tên</th>
                                         <th>Vai trò</th>
                                         <th>Hành động</th>
@@ -234,7 +248,7 @@ const AdminRBAC = () => {
                                 <tbody>
                                     {users.map(u => (
                                         <tr key={u.id}>
-                                            <td>{u.username}</td>
+                                            <td>{u.email || u.username}</td>
                                             <td>{u.fullName}</td>
                                             <td>
                                                 <span className="role-badge">{roles.find(r => r.id === u.role)?.name || u.role}</span>

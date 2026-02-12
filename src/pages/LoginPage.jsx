@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Eye, EyeOff } from 'lucide-react';
 import './LoginPage.css';
 
 const LoginPage = () => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -21,7 +23,7 @@ const LoginPage = () => {
         setError('');
         setIsLoading(true);
         try {
-            await login(username, password);
+            await login(email, password);
             navigate(from, { replace: true });
         } catch (err) {
             setError(err.message || 'Đăng nhập thất bại');
@@ -34,47 +36,52 @@ const LoginPage = () => {
         <div className="login-container">
             <div className="login-card">
                 <h2 className="login-title">Đăng nhập</h2>
-                <p className="login-subtitle">Quản lý Thu - Chi</p>
 
                 {error && <div className="error-message">{error}</div>}
 
                 <form onSubmit={handleSubmit} className="login-form">
                     <div className="form-group">
-                        <label htmlFor="username">Tên đăng nhập</label>
+                        <label htmlFor="email">Tên đăng nhập</label>
                         <input
-                            type="text"
-                            id="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            type="email"
+                            id="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
-                            placeholder="admin / manager / staff"
                         />
                     </div>
 
                     <div className="form-group">
                         <label htmlFor="password">Mật khẩu</label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            placeholder="123"
-                        />
+                        <div className="password-input-wrapper">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                id="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <button
+                                type="button"
+                                className="toggle-password"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
+                        </div>
+                        <div className="forgot-password">
+                            <a href="#" onClick={(e) => {
+                                e.preventDefault();
+                                alert('Vui lòng liên hệ quản trị viên để cấp lại mật khẩu.');
+                            }}>
+                                Quên mật khẩu?
+                            </a>
+                        </div>
                     </div>
 
                     <button type="submit" className="login-btn" disabled={isLoading}>
                         {isLoading ? 'Đang xử lý...' : 'Đăng nhập'}
                     </button>
-
-                    <div className="demo-credentials">
-                        <p>Thông tin đăng nhập mẫu:</p>
-                        <ul>
-                            <li><strong>admin</strong> / 123</li>
-                            <li><strong>manager</strong> / 123</li>
-                            <li><strong>staff</strong> / 123</li>
-                        </ul>
-                    </div>
                 </form>
             </div>
         </div>

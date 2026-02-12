@@ -151,13 +151,15 @@
     border-color: #fca5a5;
 }
 
-/* Main Content */
+/* Main Content Base Styles */
 .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     background-color: #f9fafb;
+    min-width: 0;
+    /* Prevent overflow */
 }
 
 .top-header {
@@ -167,6 +169,7 @@
     display: flex;
     align-items: center;
     padding: 0 2rem;
+    gap: 1rem;
 }
 
 .page-title {
@@ -179,4 +182,54 @@
     flex: 1;
     overflow-y: auto;
     padding: 2rem;
+}
+
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: #4b5563;
+    cursor: pointer;
+}
+
+/* Responsive Layout Improvements */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 2000;
+        transform: translateX(-100%);
+        width: 260px !important;
+        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .top-header {
+        padding: 0 1rem;
+    }
+
+    .content-area {
+        padding: 1rem;
+    }
+
+    .mobile-menu-toggle {
+        display: block;
+    }
+
+    .sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        display: none;
+    }
+
+    .sidebar.open~.sidebar-overlay {
+        display: block;
+    }
 }

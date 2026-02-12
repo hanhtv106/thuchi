@@ -65,7 +65,8 @@ const MasterDataPage = () => {
                                 type: 'select',
                                 options: [
                                     { value: 'customer', label: 'Khách hàng' },
-                                    { value: 'supplier', label: 'Nhà cung cấp' }
+                                    { value: 'supplier', label: 'Nhà cung cấp' },
+                                    { value: 'both', label: 'Cả hai (Khách + NCC)' }
                                 ]
                             },
                             { key: 'phone', label: 'Số điện thoại' },

@@ -2,12 +2,16 @@ import { format } from 'date-fns';
 import { Edit, Trash2, CheckCircle, XCircle, Eye, Printer, RotateCcw } from 'lucide-react';
 import { useTransactions } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext';
 import { printVoucher } from '../../utils/exportUtils';
 import './TransactionList.css'; // We'll create this
 
 const TransactionList = ({ onEdit }) => {
-    const { transactions, categories, softDeleteTransaction, approveTransaction, rejectTransaction, revokeApproval } = useTransactions();
-    const { user } = useAuth();
+    const { transactions, categories, softDeleteTransaction, approveTransaction, rejectTransaction,
+        revokeDecision,
+        settleTransaction } = useTransactions();
+    const { user, hasPermission } = useAuth();
+    const { showNotification } = useNotification();
 
     const getCategoryName = (id) => categories.find(c => c.id === id)?.name || 'N/A';
 
@@ -17,19 +21,34 @@ const TransactionList = ({ onEdit }) => {
 
     const handleDelete = async (id) => {
         if (window.confirm('Bạn có chắc chắn muốn xóa?')) {
-            await softDeleteTransaction(id);
+            try {
+                await softDeleteTransaction(id);
+                showNotification('Đã xóa giao dịch thành công');
+            } catch (err) {
+                showNotification('Lỗi khi xóa: ' + err.message, 'error');
+            }
         }
     };
 
     const handleApprove = async (id) => {
         if (window.confirm('Duyệt phiếu này?')) {
-            await approveTransaction(id, user.id);
+            try {
+                await approveTransaction(id, user.id);
+                showNotification('Đã duyệt phiếu thành công');
+            } catch (err) {
+                showNotification('Lỗi khi duyệt: ' + err.message, 'error');
+            }
         }
     };
 
     const handleReject = async (id) => {
         if (window.confirm('Từ chối phiếu này?')) {
-            await rejectTransaction(id, user.id);
+            try {
+                await rejectTransaction(id, user.id);
+                showNotification('Đã từ chối phiếu');
+            } catch (err) {
+                showNotification('Lỗi: ' + err.message, 'error');
+            }
         }
     };
 
@@ -71,16 +90,19 @@ const TransactionList = ({ onEdit }) => {
                                 </span>
                             </td>
                             <td className="actions-cell">
-                                {/* Edit/Delete Actions */}
-                                {/* Logic: Admin can edit anything. Others can only edit if NOT approved. */}
+                                {/* Hành động Sửa/Xóa */}
                                 {(user.role === 'admin' || tx.status !== 'approved') && (
                                     <>
-                                        <button onClick={() => onEdit(tx)} className="btn-icon text-blue" title="Sửa">
-                                            <Edit size={18} />
-                                        </button>
-                                        <button onClick={() => handleDelete(tx.id)} className="btn-icon text-red" title="Xóa">
-                                            <Trash2 size={18} />
-                                        </button>
+                                        {hasPermission('TRANSACTION_UPDATE') && (
+                                            <button onClick={() => onEdit(tx)} className="btn-icon text-blue" title="Sửa">
+                                                <Edit size={18} />
+                                            </button>
+                                        )}
+                                        {hasPermission('TRANSACTION_DELETE') && (
+                                            <button onClick={() => handleDelete(tx.id)} className="btn-icon text-red" title="Xóa">
+                                                <Trash2 size={18} />
+                                            </button>
+                                        )}
                                     </>
                                 )}
 
@@ -88,8 +110,8 @@ const TransactionList = ({ onEdit }) => {
                                     <Printer size={18} />
                                 </button>
 
-                                {/* Accountant Actions */}
-                                {(user.role === 'accountant' || user.role === 'admin') && tx.status === 'pending' && (
+                                {/* Hành động Duyệt (Kế toán/Admin) */}
+                                {hasPermission('TRANSACTION_APPROVE') && tx.status === 'pending' && (
                                     <>
                                         <button onClick={() => handleApprove(tx.id)} className="btn-icon text-green" title="Duyệt">
                                             <CheckCircle size={18} />
@@ -100,14 +122,22 @@ const TransactionList = ({ onEdit }) => {
                                     </>
                                 )}
 
-                                {/* Admin Revert Approval */}
-                                {user.role === 'admin' && tx.status === 'approved' && (
+                                {/* Admin/Accountant Revert Decision */}
+                                {(user.role === 'admin' || user.role === 'accountant') && (tx.status === 'approved' || tx.status === 'rejected') && (
                                     <button
                                         onClick={async () => {
-                                            if (window.confirm('Hủy duyệt phiếu này?')) await revokeApproval(tx.id);
+                                            const actionText = tx.status === 'approved' ? 'hủy duyệt' : 'hủy từ chối';
+                                            if (window.confirm(`Bạn có chắc muốn ${actionText} phiếu này?`)) {
+                                                try {
+                                                    await revokeDecision(tx.id);
+                                                    showNotification(`Đã ${actionText} thành công`);
+                                                } catch (err) {
+                                                    showNotification('Lỗi: ' + err.message, 'error');
+                                                }
+                                            }
                                         }}
                                         className="btn-icon text-orange"
-                                        title="Hủy duyệt"
+                                        title={tx.status === 'approved' ? 'Hủy duyệt' : 'Hủy từ chối'}
                                     >
                                         <RotateCcw size={18} />
                                     </button>

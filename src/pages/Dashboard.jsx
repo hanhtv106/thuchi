@@ -7,7 +7,7 @@ import '../pages/Reports.css'; // Reuse CSS
 
 const Dashboard = () => {
     const { transactions, isLoading } = useTransactions();
-    const { user } = useAuth();
+    const { user, hasPermission } = useAuth();
 
     const summary = useMemo(() => {
         // Current month summary
@@ -28,6 +28,18 @@ const Dashboard = () => {
     const pendingCount = transactions.filter(t => t.status === 'pending' && !t.isDeleted).length;
 
     if (isLoading) return <div style={{ padding: '2rem' }}>Đang tải dữ liệu...</div>;
+
+    // Check View Permission
+    if (!hasPermission('TRANSACTION_VIEW')) {
+        return (
+            <div className="dashboard">
+                <div style={{ padding: '2rem', textAlign: 'center' }}>
+                    <h2>Xin chào, {user?.fullName}!</h2>
+                    <p>Chào mừng bạn quay trở lại hệ thống.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="dashboard">
@@ -70,9 +82,11 @@ const Dashboard = () => {
                 <div className="card">
                     <h3>Truy cập nhanh</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
-                        <Link to="/transactions" className="btn-outline" style={{ justifyContent: 'center', textDecoration: 'none' }}>
-                            Tạo phiếu mới
-                        </Link>
+                        {hasPermission('TRANSACTION_CREATE') && (
+                            <Link to="/transactions" className="btn-outline" style={{ justifyContent: 'center', textDecoration: 'none' }}>
+                                Tạo phiếu mới
+                            </Link>
+                        )}
                         <Link to="/reports" className="btn-outline" style={{ justifyContent: 'center', textDecoration: 'none' }}>
                             Xem báo cáo
                         </Link>
