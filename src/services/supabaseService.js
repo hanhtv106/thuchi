@@ -108,6 +108,17 @@ const supabaseService = {
 
     async addUser(user) {
         try {
+            // 0. Validate role exists
+            const { data: roleCheck, error: roleError } = await supabase
+                .from('roles')
+                .select('id')
+                .eq('id', user.role)
+                .single();
+
+            if (roleError || !roleCheck) {
+                throw new Error(`Vai trò "${user.role}" không tồn tại trong hệ thống. Vui lòng kiểm tra lại.`);
+            }
+
             // 1. Kiem tra xem email da ton tai trong Auth chua
             const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
             const existingUser = existingUsers?.users?.find(u => u.email === user.email);
@@ -149,7 +160,11 @@ const supabaseService = {
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                // Nếu lỗi khi tạo profile, xóa Auth user đã tạo để tránh orphaned user
+                await supabaseAdmin.auth.admin.deleteUser(authUser.user.id);
+                throw error;
+            }
             return data;
         } catch (error) {
             // Re-throw error voi thong bao ro rang

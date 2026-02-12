@@ -46,7 +46,9 @@ const AdminRBAC = () => {
     // --- User Handlers ---
     const handleAddUser = () => {
         setCurrentUser(null);
-        setFormData({ email: '', password: '', fullName: '', role: 'employee' });
+        // Sử dụng role đầu tiên trong danh sách thay vì hardcode 'employee'
+        const defaultRole = roles.length > 0 ? roles[0].id : '';
+        setFormData({ email: '', password: '', fullName: '', role: defaultRole });
         setIsEditing(true);
     };
 
