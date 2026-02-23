@@ -245,20 +245,49 @@ const supabaseService = {
 
             // 4. Ghi Permissions (Quyen han)
             const permissions = [
+                // Giao dịch Thu Chi
                 { id: 'tx_view', code: 'TRANSACTION_VIEW', name: 'Xem Thu Chi', group: 'Giao dịch' },
                 { id: 'tx_create', code: 'TRANSACTION_CREATE', name: 'Thêm Thu Chi', group: 'Giao dịch' },
                 { id: 'tx_update', code: 'TRANSACTION_UPDATE', name: 'Sửa Thu Chi', group: 'Giao dịch' },
                 { id: 'tx_delete', code: 'TRANSACTION_DELETE', name: 'Xóa Thu Chi', group: 'Giao dịch' },
                 { id: 'tx_approve', code: 'TRANSACTION_APPROVE', name: 'Duyệt Thu Chi', group: 'Giao dịch' },
+                // Tất toán
+                { id: 'settle_view', code: 'SETTLEMENT_VIEW', name: 'Xem Tất toán', group: 'Tất toán' },
                 { id: 'settle_manage', code: 'SETTLEMENT_MANAGE', name: 'Quản lý Tất toán', group: 'Tất toán' },
+                // Báo cáo
+                { id: 'report_view', code: 'REPORT_VIEW', name: 'Xem Báo cáo', group: 'Báo cáo' },
+                { id: 'report_export', code: 'REPORT_EXPORT', name: 'Xuất Báo cáo', group: 'Báo cáo' },
+                // Dữ liệu nguồn (Master Data)
                 { id: 'md_view', code: 'MASTER_DATA_VIEW', name: 'Xem Dữ liệu nguồn', group: 'Dữ liệu nguồn' },
                 { id: 'md_manage', code: 'MASTER_DATA_MANAGE', name: 'Quản lý Dữ liệu nguồn', group: 'Dữ liệu nguồn' },
+                // Hệ thống
                 { id: 'sys_manage', code: 'SYSTEM_MANAGE', name: 'Quản trị Hệ thống', group: 'Hệ thống' },
             ];
             const { error: permErr } = await supabaseAdmin.from('permissions').upsert(permissions, { onConflict: 'id' });
             if (permErr) throw new Error('Lỗi bảng Quyền hạn (Permissions): ' + permErr.message);
 
-            // 5. Ghi Partners (Doi tac mau)
+            // 5.a Xóa role_permissions cũ trước khi gán lại
+            await supabaseAdmin.from('role_permissions').delete().in('roleId', ['admin', 'accountant', 'employee']);
+
+            // 5.b Gán quyền cho từng role
+            const adminPerms = permissions.map(p => ({ roleId: 'admin', permissionId: p.id }));
+            const accountantPerms = [
+                'tx_view', 'tx_create', 'tx_update', 'tx_approve',
+                'settle_view', 'settle_manage',
+                'report_view', 'report_export',
+                'md_view',
+            ].map(id => ({ roleId: 'accountant', permissionId: id }));
+            const employeePerms = [
+                'tx_view', 'tx_create',
+                'settle_view',
+                'report_view',
+            ].map(id => ({ roleId: 'employee', permissionId: id }));
+
+            const rolePermsToInsert = [...adminPerms, ...accountantPerms, ...employeePerms];
+            const { error: rpErr } = await supabaseAdmin.from('role_permissions').insert(rolePermsToInsert);
+            if (rpErr) throw new Error('Lỗi bảng Phân quyền (Role Permissions): ' + rpErr.message);
+
+            // 6. Ghi Partners (Doi tac mau)
             const partners = [
                 { id: 'part_1', name: 'Công ty ABC', type: 'both', phone: '0123456789' },
                 { id: 'part_2', name: 'Cửa hàng Tiện Lợi', type: 'supplier', phone: '0987654321' },

@@ -1,77 +1,85 @@
--- Script tạo các quyền (permissions) chi tiết cho hệ thống
--- Chạy script này trong Supabase SQL Editor
+-- ============================================================
+-- Script khởi tạo Permissions và Role Permissions cho hệ thống
+-- ============================================================
+-- Chạy script này trong Supabase SQL Editor sau khi đã tạo bảng.
+-- Script ĐỒNG BỘ với seedData() trong supabaseService.js
 
--- XÓA CÁC QUYỀN CŨ (uncomment để chạy)
+-- Bước 1: Xóa dữ liệu phân quyền cũ
 DELETE FROM role_permissions;
 DELETE FROM permissions;
 
--- 1. QUYỀN THU CHI (TRANSACTION)
-INSERT INTO permissions (id, code, name) VALUES
-('TRANSACTION_VIEW', 'TRANSACTION_VIEW', 'Xem thu chi'),
-('TRANSACTION_ADD', 'TRANSACTION_ADD', 'Thêm thu chi'),
-('TRANSACTION_EDIT', 'TRANSACTION_EDIT', 'Sửa thu chi'),
-('TRANSACTION_DELETE', 'TRANSACTION_DELETE', 'Xóa thu chi');
+-- ============================================================
+-- Bước 2: Tạo Roles mẫu (nếu chưa có)
+-- ============================================================
+INSERT INTO roles (id, name, description) VALUES
+    ('admin',      'Admin',     'Quản trị viên hệ thống - toàn quyền'),
+    ('accountant', 'Kế toán',   'Quản lý thu chi, tất toán và báo cáo'),
+    ('employee',   'Nhân viên', 'Nhập liệu thu chi cơ bản')
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description;
 
--- 2. QUYỀN TẤT TOÁN (SETTLEMENT)
-INSERT INTO permissions (id, code, name) VALUES
-('SETTLEMENT_VIEW', 'SETTLEMENT_VIEW', 'Xem tất toán'),
-('SETTLEMENT_ADD', 'SETTLEMENT_ADD', 'Thêm tất toán'),
-('SETTLEMENT_EDIT', 'SETTLEMENT_EDIT', 'Sửa tất toán'),
-('SETTLEMENT_DELETE', 'SETTLEMENT_DELETE', 'Xóa tất toán');
+-- ============================================================
+-- Bước 3: Tạo Permissions
+-- ============================================================
 
--- 3. QUYỀN BÁO CÁO (REPORT)
-INSERT INTO permissions (id, code, name) VALUES
-('REPORT_VIEW', 'REPORT_VIEW', 'Xem báo cáo'),
-('REPORT_ADD', 'REPORT_ADD', 'Tạo báo cáo'),
-('REPORT_EDIT', 'REPORT_EDIT', 'Sửa báo cáo'),
-('REPORT_DELETE', 'REPORT_DELETE', 'Xóa báo cáo');
+-- 🗂️ Nhóm: Giao dịch Thu Chi
+INSERT INTO permissions (id, code, name, "group") VALUES
+    ('tx_view',    'TRANSACTION_VIEW',    'Xem Thu Chi',   'Giao dịch'),
+    ('tx_create',  'TRANSACTION_CREATE',  'Thêm Thu Chi',  'Giao dịch'),
+    ('tx_update',  'TRANSACTION_UPDATE',  'Sửa Thu Chi',   'Giao dịch'),
+    ('tx_delete',  'TRANSACTION_DELETE',  'Xóa Thu Chi',   'Giao dịch'),
+    ('tx_approve', 'TRANSACTION_APPROVE', 'Duyệt Thu Chi', 'Giao dịch');
 
--- 4. QUYỀN QUẢN LÝ DỮ LIỆU (MASTER DATA)
-INSERT INTO permissions (id, code, name) VALUES
-('MASTER_VIEW', 'MASTER_VIEW', 'Xem dữ liệu'),
-('MASTER_ADD', 'MASTER_ADD', 'Thêm dữ liệu'),
-('MASTER_EDIT', 'MASTER_EDIT', 'Sửa dữ liệu'),
-('MASTER_DELETE', 'MASTER_DELETE', 'Xóa dữ liệu');
+-- 💰 Nhóm: Tất toán
+INSERT INTO permissions (id, code, name, "group") VALUES
+    ('settle_view',   'SETTLEMENT_VIEW',   'Xem Tất toán',     'Tất toán'),
+    ('settle_manage', 'SETTLEMENT_MANAGE', 'Quản lý Tất toán', 'Tất toán');
 
--- 5. QUYỀN PHÂN QUYỀN (RBAC - Role Based Access Control)
-INSERT INTO permissions (id, code, name) VALUES
-('RBAC_VIEW', 'RBAC_VIEW', 'Xem phân quyền'),
-('RBAC_ADD', 'RBAC_ADD', 'Thêm phân quyền'),
-('RBAC_EDIT', 'RBAC_EDIT', 'Sửa phân quyền'),
-('RBAC_DELETE', 'RBAC_DELETE', 'Xóa phân quyền');
+-- 📈 Nhóm: Báo cáo
+INSERT INTO permissions (id, code, name, "group") VALUES
+    ('report_view',   'REPORT_VIEW',   'Xem Báo cáo',  'Báo cáo'),
+    ('report_export', 'REPORT_EXPORT', 'Xuất Báo cáo', 'Báo cáo');
 
--- ==========================================
--- GỢI Ý PHÂN QUYỀN CHO CÁC VAI TRÒ
--- ==========================================
+-- 📁 Nhóm: Dữ liệu nguồn (Master Data)
+INSERT INTO permissions (id, code, name, "group") VALUES
+    ('md_view',   'MASTER_DATA_VIEW',   'Xem Dữ liệu nguồn',     'Dữ liệu nguồn'),
+    ('md_manage', 'MASTER_DATA_MANAGE', 'Quản lý Dữ liệu nguồn', 'Dữ liệu nguồn');
 
--- VÍ DỤ: Gán quyền cho role 'admin' (tất cả quyền)
--- Giả sử admin role ID là 'admin'
-/*
+-- ⚙️ Nhóm: Hệ thống
+INSERT INTO permissions (id, code, name, "group") VALUES
+    ('sys_manage', 'SYSTEM_MANAGE', 'Quản trị Hệ thống', 'Hệ thống');
+
+-- ============================================================
+-- Bước 4: Gán quyền cho từng Role
+-- ============================================================
+
+-- 👑 ADMIN: Toàn quyền (tất cả permissions)
 INSERT INTO role_permissions (roleId, permissionId)
-SELECT 'admin', code FROM permissions;
-*/
+SELECT 'admin', id FROM permissions;
 
--- VÍ DỤ: Gán quyền cho role 'accountant' (kế toán)
--- Giả sử accountant role ID là 'accountant'
-/*
-INSERT INTO role_permissions (roleId, permissionId)
-SELECT 'accountant', code FROM permissions
-WHERE code IN (
-    'TRANSACTION_VIEW', 'TRANSACTION_ADD', 'TRANSACTION_EDIT',
-    'SETTLEMENT_VIEW', 'SETTLEMENT_ADD', 'SETTLEMENT_EDIT',
-    'REPORT_VIEW', 'REPORT_ADD',
-    'MASTER_VIEW', 'MASTER_ADD', 'MASTER_EDIT'
-);
-*/
+-- 📒 KẾ TOÁN (accountant): Xem/Thêm/Sửa/Duyệt thu chi, quản lý tất toán, xem+xuất báo cáo, xem dữ liệu nguồn
+INSERT INTO role_permissions (roleId, permissionId) VALUES
+    ('accountant', 'tx_view'),
+    ('accountant', 'tx_create'),
+    ('accountant', 'tx_update'),
+    ('accountant', 'tx_approve'),
+    ('accountant', 'settle_view'),
+    ('accountant', 'settle_manage'),
+    ('accountant', 'report_view'),
+    ('accountant', 'report_export'),
+    ('accountant', 'md_view');
 
--- VÍ DỤ: Gán quyền cho role 'employee' (nhân viên)
--- Giả sử employee role ID là 'employee'
-/*
-INSERT INTO role_permissions (roleId, permissionId)
-SELECT 'employee', code FROM permissions
-WHERE code IN (
-    'TRANSACTION_VIEW', 'TRANSACTION_ADD',
-    'SETTLEMENT_VIEW',
-    'REPORT_VIEW'
-);
-*/
+-- 👤 NHÂN VIÊN (employee): Chỉ nhập thu chi và xem
+INSERT INTO role_permissions (roleId, permissionId) VALUES
+    ('employee', 'tx_view'),
+    ('employee', 'tx_create'),
+    ('employee', 'settle_view'),
+    ('employee', 'report_view');
+
+-- ============================================================
+-- Kiểm tra kết quả
+-- ============================================================
+-- SELECT r.name as role, p.name as permission, p."group"
+-- FROM role_permissions rp
+-- JOIN roles r ON r.id = rp."roleId"
+-- JOIN permissions p ON p.id = rp."permissionId"
+-- ORDER BY r.name, p."group", p.name;

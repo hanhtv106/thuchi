@@ -15,8 +15,8 @@ export const MainLayout = () => {
     const NAV_ITEMS = [
         { label: 'Tổng quan', path: '/', icon: LayoutDashboard },
         { label: 'Thu - Chi', path: '/transactions', icon: Receipt, permission: 'TRANSACTION_VIEW' },
-        { label: 'Tất toán', path: '/settlement', icon: ClipboardCheck, permission: 'SETTLEMENT_MANAGE' },
-        { label: 'Báo cáo', path: '/reports', icon: FileText, permission: 'TRANSACTION_VIEW' },
+        { label: 'Tất toán', path: '/settlement', icon: ClipboardCheck, permission: 'SETTLEMENT_VIEW' },
+        { label: 'Báo cáo', path: '/reports', icon: FileText, permission: 'REPORT_VIEW' },
         { label: 'Quản lý Dữ liệu', path: '/admin/master-data', icon: Settings, permission: 'MASTER_DATA_VIEW' },
         { label: 'Phân quyền', path: '/admin/rbac', icon: Shield, permission: 'SYSTEM_MANAGE' },
     ];
