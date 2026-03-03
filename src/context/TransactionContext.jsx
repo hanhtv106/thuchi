@@ -28,7 +28,7 @@ export const TransactionProvider = ({ children }) => {
             setUnits(us || []);
             setPartners(ps || []);
         } catch (error) {
-            console.error('Lỗi khi tải dữ liệu từ SQL Server:', error);
+            console.error('Lỗi khi tải dữ liệu từ Supabase:', error);
         } finally {
             setIsLoading(false);
         }
@@ -65,15 +65,15 @@ export const TransactionProvider = ({ children }) => {
 
     // Settlement methods (missing before)
     const settleTransaction = async (id) => {
-        await apiService.updateTransaction(id, { isSettled: 1, settledAt: new Date().toISOString() });
+        await apiService.updateTransaction(id, { isSettled: true, settledAt: new Date().toISOString() });
         await refreshData();
     };
     const unsettleTransaction = async (id) => {
-        await apiService.updateTransaction(id, { isSettled: 0, settledAt: null });
+        await apiService.updateTransaction(id, { isSettled: false, settledAt: null });
         await refreshData();
     };
     const settleMultipleTransactions = async (ids) => {
-        await Promise.all(ids.map(id => apiService.updateTransaction(id, { isSettled: 1, settledAt: new Date().toISOString() })));
+        await Promise.all(ids.map(id => apiService.updateTransaction(id, { isSettled: true, settledAt: new Date().toISOString() })));
         await refreshData();
     };
 
@@ -119,14 +119,24 @@ export const TransactionProvider = ({ children }) => {
         await refreshData();
     };
 
-    // Upload File (Chuyển thành Base64 để lưu vào DB cho đơn giản)
+    // Upload File (Sử dụng Supabase Storage)
     const uploadFile = async (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-        });
+        const { supabase } = await import('../services/supabaseClient');
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+        const filePath = `uploads/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from('attachments')
+            .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+            .from('attachments')
+            .getPublicUrl(filePath);
+
+        return data.publicUrl;
     };
 
     return (

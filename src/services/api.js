@@ -1,60 +1,260 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
-
-axios.interceptors.request.use(config => {
-    const user = JSON.parse(localStorage.getItem('thuchi_user'));
-    if (user?.token) {
-        config.headers.Authorization = `Bearer ${user.token}`;
-    }
-    return config;
-}, error => Promise.reject(error));
+import { supabase } from './supabaseClient';
 
 const apiService = {
-    async login(email, password) { return (await axios.post(`${API_URL}/auth/login`, { email, password })).data; },
+    // Auth
+    async login(email, password) {
+        // 1. Sign in with Supabase
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+
+        if (authError) throw authError;
+
+        // 2. Fetch Profile & Role Permissions
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*, roles(name)')
+            .eq('id', authData.user.id)
+            .single();
+
+        if (profileError) throw profileError;
+
+        // 3. Fetch Permissions Codes
+        const { data: perms, error: permsError } = await supabase
+            .from('role_permissions')
+            .select('permissions(code)')
+            .eq('role_id', profile.role);
+
+        if (permsError) throw permsError;
+
+        const permissionCodes = perms.map(p => p.permissions.code);
+
+        return {
+            token: authData.session.access_token,
+            user: {
+                uid: authData.user.id,
+                email: authData.user.email,
+                fullName: profile.full_name,
+                role: profile.role,
+                permissions: permissionCodes
+            }
+        };
+    },
+
+    async logout() {
+        await supabase.auth.signOut();
+    },
 
     // Transactions
-    async getAllTransactions() { return (await axios.get(`${API_URL}/transactions`)).data; },
-    async addTransaction(tx) { return (await axios.post(`${API_URL}/transactions`, tx)).data; },
-    async updateTransaction(id, tx) { return (await axios.put(`${API_URL}/transactions/${id}`, tx)).data; },
-    async deleteTransaction(id) { return (await axios.delete(`${API_URL}/transactions/${id}`)).data; },
-    async approveTransaction(id) { return (await axios.post(`${API_URL}/transactions/${id}/approve`)).data; },
-    async rejectTransaction(id) { return (await axios.post(`${API_URL}/transactions/${id}/reject`)).data; },
-    async revokeTransaction(id) { return (await axios.post(`${API_URL}/transactions/${id}/revoke`)).data; },
+    async getAllTransactions() {
+        const { data, error } = await supabase
+            .from('transactions')
+            .select('*')
+            .eq('is_deleted', false)
+            .order('date', { ascending: false });
+        if (error) throw error;
+        // Map snake_case to camelCase for frontend compatibility if needed, 
+        // but here we might just map the fields manually or keep them if they match.
+        // The SQL Server version used camelCase for some fields but the PostgeSQL uses snake_case.
+        // Let's map them to keep frontend working.
+        return data.map(item => ({
+            ...item,
+            categoryId: item.category_id,
+            unitId: item.unit_id,
+            partnerId: item.partner_id,
+            unitPrice: item.unit_price,
+            isSettled: item.is_settled,
+            settledAt: item.settled_at,
+            createdBy: item.created_by
+        }));
+    },
+
+    async addTransaction(tx) {
+        const { error } = await supabase.from('transactions').insert({
+            date: tx.date,
+            type: tx.type,
+            amount: tx.amount,
+            content: tx.content,
+            category_id: tx.categoryId,
+            unit_id: tx.unitId,
+            partner_id: tx.partnerId,
+            quantity: tx.quantity,
+            unit_price: tx.unitPrice,
+            receiver: tx.receiver,
+            attachments: tx.attachments,
+            created_by: tx.createdBy
+        });
+        if (error) throw error;
+        return { message: 'Created' };
+    },
+
+    async updateTransaction(id, tx) {
+        const { error } = await supabase.from('transactions').update({
+            date: tx.date,
+            type: tx.type,
+            amount: tx.amount,
+            content: tx.content,
+            category_id: tx.categoryId,
+            unit_id: tx.unitId,
+            partner_id: tx.partnerId,
+            status: tx.status,
+            quantity: tx.quantity,
+            unit_price: tx.unitPrice,
+            receiver: tx.receiver,
+            attachments: tx.attachments,
+            is_settled: tx.isSettled,
+            settled_at: tx.settledAt
+        }).eq('id', id);
+        if (error) throw error;
+        return { message: 'Updated' };
+    },
+
+    async deleteTransaction(id) {
+        const { error } = await supabase
+            .from('transactions')
+            .update({ is_deleted: true, deleted_at: new Date().toISOString() })
+            .eq('id', id);
+        if (error) throw error;
+        return { message: 'Deleted' };
+    },
+
+    async approveTransaction(id) {
+        const { error } = await supabase
+            .from('transactions')
+            .update({ status: 'approved', settled_at: new Date().toISOString() })
+            .eq('id', id);
+        if (error) throw error;
+        return { message: 'Approved' };
+    },
+
+    async rejectTransaction(id) {
+        const { error } = await supabase
+            .from('transactions')
+            .update({ status: 'rejected' })
+            .eq('id', id);
+        if (error) throw error;
+        return { message: 'Rejected' };
+    },
+
+    async revokeTransaction(id) {
+        const { error } = await supabase
+            .from('transactions')
+            .update({ status: 'pending', settled_at: null })
+            .eq('id', id);
+        if (error) throw error;
+        return { message: 'Revoked' };
+    },
 
     // Categories
-    async getAllCategories() { return (await axios.get(`${API_URL}/categories`)).data; },
-    async addCategory(cat) { return (await axios.post(`${API_URL}/categories`, cat)).data; },
-    async updateCategory(id, cat) { return (await axios.put(`${API_URL}/categories/${id}`, cat)).data; },
-    async deleteCategory(id) { return (await axios.delete(`${API_URL}/categories/${id}`)).data; },
+    async getAllCategories() {
+        const { data, error } = await supabase.from('categories').select('*');
+        if (error) throw error;
+        return data;
+    },
+    async addCategory(cat) {
+        const { error } = await supabase.from('categories').insert(cat);
+        if (error) throw error;
+        return { message: 'Created' };
+    },
+    async updateCategory(id, cat) {
+        const { error } = await supabase.from('categories').update(cat).eq('id', id);
+        if (error) throw error;
+        return { message: 'Updated' };
+    },
+    async deleteCategory(id) {
+        const { error } = await supabase.from('categories').delete().eq('id', id);
+        if (error) throw error;
+        return { message: 'Deleted' };
+    },
 
     // Units
-    async getAllUnits() { return (await axios.get(`${API_URL}/units`)).data; },
-    async addUnit(unit) { return (await axios.post(`${API_URL}/units`, unit)).data; },
-    async updateUnit(id, unit) { return (await axios.put(`${API_URL}/units/${id}`, unit)).data; },
-    async deleteUnit(id) { return (await axios.delete(`${API_URL}/units/${id}`)).data; },
+    async getAllUnits() {
+        const { data, error } = await supabase.from('units').select('*');
+        if (error) throw error;
+        return data;
+    },
+    async addUnit(unit) {
+        const { error } = await supabase.from('units').insert(unit);
+        if (error) throw error;
+        return { message: 'Created' };
+    },
+    async updateUnit(id, unit) {
+        const { error } = await supabase.from('units').update(unit).eq('id', id);
+        if (error) throw error;
+        return { message: 'Updated' };
+    },
+    async deleteUnit(id) {
+        const { error } = await supabase.from('units').delete().eq('id', id);
+        if (error) throw error;
+        return { message: 'Deleted' };
+    },
 
     // Partners
-    async getAllPartners() { return (await axios.get(`${API_URL}/partners`)).data; },
-    async addPartner(ptr) { return (await axios.post(`${API_URL}/partners`, ptr)).data; },
-    async updatePartner(id, ptr) { return (await axios.put(`${API_URL}/partners/${id}`, ptr)).data; },
-    async deletePartner(id) { return (await axios.delete(`${API_URL}/partners/${id}`)).data; },
+    async getAllPartners() {
+        const { data, error } = await supabase.from('partners').select('*');
+        if (error) throw error;
+        return data;
+    },
+    async addPartner(ptr) {
+        const { error } = await supabase.from('partners').insert(ptr);
+        if (error) throw error;
+        return { message: 'Created' };
+    },
+    async updatePartner(id, ptr) {
+        const { error } = await supabase.from('partners').update(ptr).eq('id', id);
+        if (error) throw error;
+        return { message: 'Updated' };
+    },
+    async deletePartner(id) {
+        const { error } = await supabase.from('partners').delete().eq('id', id);
+        if (error) throw error;
+        return { message: 'Deleted' };
+    },
 
-    // Users
-    async getAllUsers() { return (await axios.get(`${API_URL}/users`)).data; },
-    async addUser(u) { return (await axios.post(`${API_URL}/users`, u)).data; },
-    async updateUser(id, u) { return (await axios.put(`${API_URL}/users/${id}`, u)).data; },
-    async deleteUser(id) { return (await axios.delete(`${API_URL}/users/${id}`)).data; },
+    // Users (Profiles in Supabase)
+    async getAllUsers() {
+        const { data, error } = await supabase.from('profiles').select('*');
+        if (error) throw error;
+        return data.map(u => ({
+            id: u.id,
+            email: u.email,
+            username: u.username,
+            fullName: u.full_name,
+            role: u.role
+        }));
+    },
+    // Note: AddUser/DeleteUser for Supabase Auth requires Admin API or custom Edge Function.
+    // For now, we'll assume users sign up themselves or admin uses Supabase Dashboard.
 
     // Roles & Permissions
-    async getAllRoles() { return (await axios.get(`${API_URL}/roles`)).data; },
-    async addRole(role) { return (await axios.post(`${API_URL}/roles`, role)).data; },
-    async updateRole(id, role) { return (await axios.put(`${API_URL}/roles/${id}`, role)).data; },
-    async deleteRole(id) { return (await axios.delete(`${API_URL}/roles/${id}`)).data; },
-
-    async getAllPermissions() { return (await axios.get(`${API_URL}/permissions`)).data; },
-    async getPermissionsByRole(roleId) { return (await axios.get(`${API_URL}/role-permissions/${roleId}`)).data; },
-    async updateRolePermissions(roleId, pIds) { return (await axios.post(`${API_URL}/role-permissions`, { roleId, permissionIds: pIds })).data; }
+    async getAllRoles() {
+        const { data, error } = await supabase.from('roles').select('*');
+        if (error) throw error;
+        return data;
+    },
+    async getAllPermissions() {
+        const { data, error } = await supabase.from('permissions').select('*');
+        if (error) throw error;
+        return data;
+    },
+    async getPermissionsByRole(roleId) {
+        const { data, error } = await supabase
+            .from('role_permissions')
+            .select('permission_id')
+            .eq('role_id', roleId);
+        if (error) throw error;
+        return data.map(rp => rp.permission_id);
+    },
+    async updateRolePermissions(roleId, pIds) {
+        // Delete existing
+        await supabase.from('role_permissions').delete().eq('role_id', roleId);
+        // Insert new
+        const rows = pIds.map(pid => ({ role_id: roleId, permission_id: pid }));
+        const { error } = await supabase.from('role_permissions').insert(rows);
+        if (error) throw error;
+        return { message: 'Updated' };
+    }
 };
 
 export default apiService;
