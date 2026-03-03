@@ -1,32 +1,42 @@
 -- ============================================================
--- SQL Script: Migration to Supabase (PostgreSQL)
+-- SQL Script: Migration Clean Start (PostgreSQL - Supabase)
 -- Application: Thu - Chi
 -- ============================================================
 
+-- Xóa dữ liệu cũ để tránh xung đột cột
+DROP TABLE IF EXISTS public.transactions CASCADE;
+DROP TABLE IF EXISTS public.role_permissions CASCADE;
+DROP TABLE IF EXISTS public.permissions CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+DROP TABLE IF EXISTS public.roles CASCADE;
+DROP TABLE IF EXISTS public.categories CASCADE;
+DROP TABLE IF EXISTS public.partners CASCADE;
+DROP TABLE IF EXISTS public.units CASCADE;
+
 -- 1. Table: Roles
-CREATE TABLE IF NOT EXISTS public.roles (
+CREATE TABLE public.roles (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT
 );
 
 -- 2. Table: Permissions
-CREATE TABLE IF NOT EXISTS public.permissions (
+CREATE TABLE public.permissions (
     id TEXT PRIMARY KEY,
     code TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
     "group" TEXT
 );
 
--- 3. Table: RolePermissions
-CREATE TABLE IF NOT EXISTS public.role_permissions (
+-- 3. Table: Role_Permissions
+CREATE TABLE public.role_permissions (
     role_id TEXT REFERENCES public.roles(id) ON DELETE CASCADE,
     permission_id TEXT REFERENCES public.permissions(id) ON DELETE CASCADE,
     PRIMARY KEY (role_id, permission_id)
 );
 
 -- 4. Table: Profiles (Extends Supabase Auth)
-CREATE TABLE IF NOT EXISTS public.profiles (
+CREATE TABLE public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     username TEXT UNIQUE,
     full_name TEXT,
@@ -37,16 +47,18 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 -- Enable Row Level Security (RLS) on Profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public profiles are viewable by everyone." ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "Users can update own profile." ON public.profiles FOR UPDATE USING (auth.uid() = id);
 
 -- 5. Table: Units
-CREATE TABLE IF NOT EXISTS public.units (
+CREATE TABLE public.units (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- 6. Table: Categories
-CREATE TABLE IF NOT EXISTS public.categories (
+CREATE TABLE public.categories (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     type TEXT CHECK (type IN ('income', 'expense')),
@@ -54,7 +66,7 @@ CREATE TABLE IF NOT EXISTS public.categories (
 );
 
 -- 7. Table: Partners
-CREATE TABLE IF NOT EXISTS public.partners (
+CREATE TABLE public.partners (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     type TEXT, -- 'customer', 'supplier', 'both'
@@ -63,7 +75,7 @@ CREATE TABLE IF NOT EXISTS public.partners (
 );
 
 -- 8. Table: Transactions
-CREATE TABLE IF NOT EXISTS public.transactions (
+CREATE TABLE public.transactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     type TEXT CHECK (type IN ('income', 'expense')),
@@ -84,6 +96,12 @@ CREATE TABLE IF NOT EXISTS public.transactions (
     deleted_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Enable RLS on Transactions
+ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Everyone can see transactions." ON public.transactions FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can insert transactions." ON public.transactions FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Authenticated users can update transactions." ON public.transactions FOR UPDATE USING (auth.role() = 'authenticated');
 
 -- ============================================================
 -- PRE-SEEDING DATA
