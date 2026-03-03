@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Edit, Trash2, CheckCircle, XCircle, Eye, Printer, RotateCcw } from 'lucide-react';
+import { Edit, Trash2, CheckCircle, XCircle, Eye, Printer, RotateCcw, Paperclip } from 'lucide-react';
 import { useTransactions } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
@@ -7,13 +7,20 @@ import { printVoucher } from '../../utils/exportUtils';
 import './TransactionList.css'; // We'll create this
 
 const TransactionList = ({ onEdit }) => {
-    const { transactions, categories, softDeleteTransaction, approveTransaction, rejectTransaction,
-        revokeDecision,
-        settleTransaction } = useTransactions();
+    const {
+        transactions,
+        categories,
+        partners,
+        softDeleteTransaction,
+        approveTransaction,
+        rejectTransaction,
+        revokeDecision
+    } = useTransactions();
     const { user, hasPermission } = useAuth();
     const { showNotification } = useNotification();
 
     const getCategoryName = (id) => categories.find(c => c.id === id)?.name || 'N/A';
+    const getPartnerName = (id) => partners.find(p => p.id === id)?.name || 'N/A';
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -25,7 +32,8 @@ const TransactionList = ({ onEdit }) => {
                 await softDeleteTransaction(id);
                 showNotification('Đã xóa giao dịch thành công');
             } catch (err) {
-                showNotification('Lỗi khi xóa: ' + err.message, 'error');
+                const errorMsg = err.response?.data?.error || err.response?.data?.message || err.message;
+                showNotification('Lỗi khi xóa: ' + errorMsg, 'error');
             }
         }
     };
@@ -36,7 +44,8 @@ const TransactionList = ({ onEdit }) => {
                 await approveTransaction(id, user.id);
                 showNotification('Đã duyệt phiếu thành công');
             } catch (err) {
-                showNotification('Lỗi khi duyệt: ' + err.message, 'error');
+                const errorMsg = err.response?.data?.error || err.response?.data?.message || err.message;
+                showNotification('Lỗi khi duyệt: ' + errorMsg, 'error');
             }
         }
     };
@@ -47,7 +56,8 @@ const TransactionList = ({ onEdit }) => {
                 await rejectTransaction(id, user.id);
                 showNotification('Đã từ chối phiếu');
             } catch (err) {
-                showNotification('Lỗi: ' + err.message, 'error');
+                const errorMsg = err.response?.data?.error || err.response?.data?.message || err.message;
+                showNotification('Lỗi: ' + errorMsg, 'error');
             }
         }
     };
@@ -77,8 +87,15 @@ const TransactionList = ({ onEdit }) => {
                             </td>
                             <td>{getCategoryName(tx.categoryId)}</td>
                             <td>
-                                <div className="tx-content">{tx.content}</div>
-                                <small>{tx.partner}</small>
+                                <div className="tx-content">
+                                    {tx.content}
+                                    {tx.attachments?.length > 0 && (
+                                        <span className="attachment-indicator" title={`${tx.attachments.length} đính kèm`}>
+                                            <Paperclip size={14} />
+                                        </span>
+                                    )}
+                                </div>
+                                <small>{getPartnerName(tx.partnerId)}</small>
                             </td>
                             <td className={`amount ${tx.type}`}>
                                 {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
@@ -132,7 +149,8 @@ const TransactionList = ({ onEdit }) => {
                                                     await revokeDecision(tx.id);
                                                     showNotification(`Đã ${actionText} thành công`);
                                                 } catch (err) {
-                                                    showNotification('Lỗi: ' + err.message, 'error');
+                                                    const errorMsg = err.response?.data?.error || err.response?.data?.message || err.message;
+                                                    showNotification('Lỗi: ' + errorMsg, 'error');
                                                 }
                                             }
                                         }}

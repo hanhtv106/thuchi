@@ -18,9 +18,9 @@ const TransactionForm = ({ onClose, initialData }) => {
         content: '',
         quantity: 1,
         unitPrice: 0,
-        unit: '',
+        unitId: '',
         amount: 0,
-        partner: '',
+        partnerId: '',
         receiver: '',
         attachments: []
     });
@@ -116,7 +116,8 @@ const TransactionForm = ({ onClose, initialData }) => {
             }
             onClose();
         } catch (error) {
-            showNotification('Lỗi: ' + error.message, 'error');
+            const errorMsg = error.response?.data?.error || error.response?.data?.message || error.message;
+            showNotification('Lỗi: ' + errorMsg, 'error');
         } finally {
             setIsUploading(false);
         }
@@ -209,10 +210,10 @@ const TransactionForm = ({ onClose, initialData }) => {
                         </div>
                         <div className="form-group">
                             <label>Đơn vị tính</label>
-                            <select name="unit" value={formData.unit} onChange={handleChange}>
+                            <select name="unitId" value={formData.unitId} onChange={handleChange}>
                                 <option value="">-- Chọn đơn vị --</option>
                                 {units.map(u => (
-                                    <option key={u.id} value={u.name}>{u.name}</option>
+                                    <option key={u.id} value={u.id}>{u.name}</option>
                                 ))}
                             </select>
                         </div>
@@ -247,7 +248,7 @@ const TransactionForm = ({ onClose, initialData }) => {
                         </div>
                         <div className="form-group">
                             <label>{formData.type === 'income' ? 'Khách hàng' : 'Nhà cung cấp'}</label>
-                            <select name="partner" value={formData.partner} onChange={handleChange}>
+                            <select name="partnerId" value={formData.partnerId} onChange={handleChange}>
                                 <option value="">-- Chọn đối tác --</option>
                                 {partners
                                     .filter(p => {
@@ -256,7 +257,7 @@ const TransactionForm = ({ onClose, initialData }) => {
                                         return formData.type === 'income' ? p.type === 'customer' : p.type === 'supplier';
                                     })
                                     .map(p => (
-                                        <option key={p.id} value={p.name}>{p.name}</option>
+                                        <option key={p.id} value={p.id}>{p.name}</option>
                                     ))}
                             </select>
                         </div>
@@ -272,6 +273,9 @@ const TransactionForm = ({ onClose, initialData }) => {
                             <div className="attachment-list">
                                 {formData.attachments?.map((file, index) => (
                                     <div key={index} className="attachment-item">
+                                        {file.type?.startsWith('image/') && file.data && (
+                                            <img src={file.data} alt="preview" className="file-preview-mini" />
+                                        )}
                                         <span className="file-name">{file.name}</span>
                                         <button type="button" onClick={() => removeAttachment(index)} className="remove-file"><X size={14} /></button>
                                     </div>

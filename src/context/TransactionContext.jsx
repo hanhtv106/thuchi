@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import supabaseService from '../services/supabaseService';
+import apiService from '../services/api';
 import { useAuth } from './AuthContext';
 
 const TransactionContext = createContext(null);
@@ -18,19 +18,17 @@ export const TransactionProvider = ({ children }) => {
         setIsLoading(true);
         try {
             const [txs, cats, us, ps] = await Promise.all([
-                supabaseService.getAllTransactions(),
-                supabaseService.getAllCategories(),
-                supabaseService.getAllUnits(),
-                supabaseService.getAllPartners()
+                apiService.getAllTransactions(),
+                apiService.getAllCategories(),
+                apiService.getAllUnits(),
+                apiService.getAllPartners()
             ]);
-            // Sắp xếp theo ngày giảm dần
-            txs.sort((a, b) => new Date(b.date) - new Date(a.date));
-            setTransactions(txs);
-            setCategories(cats);
-            setUnits(us);
-            setPartners(ps);
+            setTransactions(txs || []);
+            setCategories(cats || []);
+            setUnits(us || []);
+            setPartners(ps || []);
         } catch (error) {
-            console.error('Lỗi khi tải dữ liệu:', error);
+            console.error('Lỗi khi tải dữ liệu từ SQL Server:', error);
         } finally {
             setIsLoading(false);
         }
@@ -40,259 +38,107 @@ export const TransactionProvider = ({ children }) => {
         if (user) refreshData();
     }, [refreshData, user]);
 
+    // Helper: Tạo ID dựa trên tiền tố
+    const generateId = (prefix) => prefix + '_' + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+    // Transactions
     const addTransaction = async (data) => {
-        if (!hasPermission('TRANSACTION_CREATE')) {
-            throw new Error('Bạn không có quyền tạo phiếu thu chi');
-        }
-        const newTx = {
-            ...data,
-            id: crypto.randomUUID(),
-            createdAt: new Date().toISOString(),
-            createdBy: user.uid,
-            isDeleted: false,
-            status: 'pending'
-        };
-        await supabaseService.addTransaction(newTx);
+        // Sử dụng ngày người dùng chọn, nếu không có mới dùng ngày hiện tại
+        const dateToSave = data.date || new Date().toISOString();
+        await apiService.addTransaction({ ...data, date: dateToSave, createdBy: user.uid });
         await refreshData();
-        return newTx;
     };
-
     const updateTransaction = async (id, data) => {
-        if (!hasPermission('TRANSACTION_UPDATE')) {
-            throw new Error('Bạn không có quyền sửa phiếu thu chi');
-        }
-        const existing = transactions.find(t => t.id === id);
-        if (!existing) throw new Error('Không tìm thấy giao dịch');
-
-        const updated = { ...existing, ...data };
-        await supabaseService.updateTransaction(updated);
+        await apiService.updateTransaction(id, data);
         await refreshData();
-        return updated;
     };
-
-    const softDeleteTransaction = async (id) => {
-        if (!hasPermission('TRANSACTION_DELETE')) {
-            throw new Error('Bạn không có quyền xóa phiếu thu chi');
-        }
-        const existing = transactions.find(t => t.id === id);
-        if (!existing) throw new Error('Không tìm thấy giao dịch');
-
-        const updated = { ...existing, isDeleted: true, deletedAt: new Date().toISOString() };
-        await supabaseService.updateTransaction(updated);
+    const deleteTransaction = async (id) => {
+        await apiService.deleteTransaction(id);
         await refreshData();
     };
 
-    const approveTransaction = async (id, approverId) => {
-        if (!hasPermission('TRANSACTION_APPROVE')) {
-            throw new Error('Bạn không có quyền duyệt phiếu thu chi');
-        }
-        const existing = transactions.find(t => t.id === id);
-        if (!existing) throw new Error('Không tìm thấy giao dịch');
+    // Workflow Aliases for TransactionList
+    const softDeleteTransaction = deleteTransaction;
+    const approveTransaction = async (id) => { await apiService.approveTransaction(id); await refreshData(); };
+    const rejectTransaction = async (id) => { await apiService.rejectTransaction(id); await refreshData(); };
+    const revokeDecision = async (id) => { await apiService.revokeTransaction(id); await refreshData(); };
 
-        const updated = {
-            ...existing,
-            status: 'approved',
-            approvedBy: approverId,
-            approvedAt: new Date().toISOString()
-        };
-        await supabaseService.updateTransaction(updated);
-        await refreshData();
-    };
-
-    const rejectTransaction = async (id, rejectorId) => {
-        if (!hasPermission('TRANSACTION_APPROVE')) {
-            throw new Error('Bạn không có quyền từ chối phiếu thu chi');
-        }
-        const existing = transactions.find(t => t.id === id);
-        if (!existing) throw new Error('Không tìm thấy giao dịch');
-
-        const updated = {
-            ...existing,
-            status: 'rejected',
-            rejectedBy: rejectorId,
-            rejectedAt: new Date().toISOString()
-        };
-        await supabaseService.updateTransaction(updated);
-        await refreshData();
-    };
-
-    const revokeDecision = async (id) => {
-        if (user.role !== 'admin' && user.role !== 'accountant') {
-            throw new Error('Bạn không có quyền thực hiện thao tác này');
-        }
-        const existing = transactions.find(t => t.id === id);
-        if (!existing) throw new Error('Không tìm thấy giao dịch');
-
-        if (existing.isSettled) throw new Error('Cần hủy tất toán trước khi thực hiện');
-
-        const updated = {
-            ...existing,
-            status: 'pending',
-            approvedBy: null,
-            approvedAt: null,
-            rejectedBy: null,
-            rejectedAt: null
-        };
-        await supabaseService.updateTransaction(updated);
-        await refreshData();
-    };
-
+    // Settlement methods (missing before)
     const settleTransaction = async (id) => {
-        if (!hasPermission('SETTLEMENT_MANAGE')) {
-            throw new Error('Bạn không có quyền tất toán');
-        }
-        const existing = transactions.find(t => t.id === id);
-        if (!existing) throw new Error('Không tìm thấy giao dịch');
-
-        const updated = {
-            ...existing,
-            isSettled: true,
-            settledAt: new Date().toISOString()
-        };
-        await supabaseService.updateTransaction(updated);
+        await apiService.updateTransaction(id, { isSettled: 1, settledAt: new Date().toISOString() });
         await refreshData();
     };
-
-    const settleMultipleTransactions = async (ids) => {
-        if (!hasPermission('SETTLEMENT_MANAGE')) {
-            throw new Error('Bạn không có quyền tất toán');
-        }
-        const updates = ids.map(id => {
-            const existing = transactions.find(t => t.id === id);
-            if (!existing) return null;
-            return {
-                ...existing,
-                isSettled: true,
-                settledAt: new Date().toISOString()
-            };
-        }).filter(Boolean);
-
-        await Promise.all(updates.map(u => supabaseService.updateTransaction(u)));
-        await refreshData();
-    };
-
     const unsettleTransaction = async (id) => {
-        if (!hasPermission('SETTLEMENT_MANAGE')) {
-            throw new Error('Bạn không có quyền tất toán');
-        }
-        const existing = transactions.find(t => t.id === id);
-        if (!existing) throw new Error('Không tìm thấy giao dịch');
-
-        const updated = {
-            ...existing,
-            isSettled: false,
-            settledAt: null
-        };
-        await supabaseService.updateTransaction(updated);
+        await apiService.updateTransaction(id, { isSettled: 0, settledAt: null });
+        await refreshData();
+    };
+    const settleMultipleTransactions = async (ids) => {
+        await Promise.all(ids.map(id => apiService.updateTransaction(id, { isSettled: 1, settledAt: new Date().toISOString() })));
         await refreshData();
     };
 
-    // --- Phương thức Dữ liệu nguồn ---
-
+    // Categories
     const addCategory = async (data) => {
-        if (!hasPermission('MASTER_DATA_MANAGE')) throw new Error('Không có quyền quản lý danh mục');
-        const newCat = { ...data, id: crypto.randomUUID() };
-        await supabaseService.addCategory(newCat);
+        await apiService.addCategory({ ...data, id: generateId('CAT') });
         await refreshData();
-        return newCat;
     };
-
     const updateCategory = async (id, data) => {
-        if (!hasPermission('MASTER_DATA_MANAGE')) throw new Error('Không có quyền quản lý danh mục');
-        const updated = { ...data, id };
-        await supabaseService.updateCategory(updated);
+        await apiService.updateCategory(id, data);
         await refreshData();
-        return updated;
     };
-
     const deleteCategory = async (id) => {
-        if (!hasPermission('MASTER_DATA_MANAGE')) throw new Error('Không có quyền quản lý danh mục');
-        await supabaseService.deleteCategory(id);
+        await apiService.deleteCategory(id);
         await refreshData();
     };
 
+    // Units
     const addUnit = async (data) => {
-        if (!hasPermission('MASTER_DATA_MANAGE')) throw new Error('Không có quyền quản lý đơn vị');
-        const newUnit = { ...data, id: crypto.randomUUID() };
-        await supabaseService.addUnit(newUnit);
+        await apiService.addUnit({ ...data, id: generateId('UNT') });
         await refreshData();
-        return newUnit;
     };
-
     const updateUnit = async (id, data) => {
-        if (!hasPermission('MASTER_DATA_MANAGE')) throw new Error('Không có quyền quản lý đơn vị');
-        const updated = { ...data, id };
-        await supabaseService.updateUnit(updated);
+        await apiService.updateUnit(id, data);
         await refreshData();
-        return updated;
     };
-
     const deleteUnit = async (id) => {
-        if (!hasPermission('MASTER_DATA_MANAGE')) throw new Error('Không có quyền quản lý đơn vị');
-        await supabaseService.deleteUnit(id);
+        await apiService.deleteUnit(id);
         await refreshData();
     };
 
+    // Partners
     const addPartner = async (data) => {
-        if (!hasPermission('MASTER_DATA_MANAGE')) throw new Error('Không có quyền quản lý đối tác');
-        const newPartner = { ...data, id: crypto.randomUUID() };
-        await supabaseService.addPartner(newPartner);
+        await apiService.addPartner({ ...data, id: generateId('PAR') });
         await refreshData();
-        return newPartner;
     };
-
     const updatePartner = async (id, data) => {
-        if (!hasPermission('MASTER_DATA_MANAGE')) throw new Error('Không có quyền quản lý đối tác');
-        const updated = { ...data, id };
-        await supabaseService.updatePartner(updated);
+        await apiService.updatePartner(id, data);
         await refreshData();
-        return updated;
     };
-
     const deletePartner = async (id) => {
-        if (!hasPermission('MASTER_DATA_MANAGE')) throw new Error('Không có quyền quản lý đối tác');
-        await supabaseService.deletePartner(id);
+        await apiService.deletePartner(id);
         await refreshData();
     };
 
-    const filteredTransactions = transactions.filter(t => {
-        if (!user) return false;
-        if (t.isDeleted && user.role !== 'admin') return false;
-
-        if (user.role === 'employee') {
-            return t.createdBy === user.uid;
-        }
-        return true;
-    });
+    // Upload File (Chuyển thành Base64 để lưu vào DB cho đơn giản)
+    const uploadFile = async (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    };
 
     return (
         <TransactionContext.Provider value={{
-            transactions: filteredTransactions,
-            allTransactions: transactions,
-            categories,
-            isLoading,
-            addTransaction,
-            updateTransaction,
-            softDeleteTransaction,
-            approveTransaction,
-            rejectTransaction,
-            revokeDecision,
-            settleTransaction,
-            settleMultipleTransactions,
-            unsettleTransaction,
-            refreshData,
-            addCategory,
-            updateCategory,
-            deleteCategory,
-            units,
-            addUnit,
-            updateUnit,
-            deleteUnit,
-            partners,
-            addPartner,
-            updatePartner,
-            deletePartner,
-            uploadFile: supabaseService.uploadFile.bind(supabaseService)
+            transactions, categories, units, partners, isLoading,
+            addTransaction, updateTransaction, deleteTransaction,
+            softDeleteTransaction, approveTransaction, rejectTransaction, revokeDecision,
+            settleTransaction, unsettleTransaction, settleMultipleTransactions, // Added settle methods
+            addCategory, updateCategory, deleteCategory,
+            addUnit, updateUnit, deleteUnit,
+            addPartner, updatePartner, deletePartner,
+            refreshData, uploadFile
         }}>
             {children}
         </TransactionContext.Provider>

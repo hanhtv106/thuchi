@@ -41,13 +41,22 @@ const DataManagementTable = ({ title, data, onAdd, onUpdate, onDelete, columns =
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa?')) {
-            try {
-                await onDelete(id);
-            } catch (error) {
-                alert('Lỗi xóa: ' + error.message);
+        console.log('DEBUG: DataManagementTable - Click Delete, id:', id);
+        // Bọc trong setTimeout để tránh lag UI blocking dialog
+        setTimeout(async () => {
+            if (window.confirm('Bạn có chắc chắn muốn xóa mục này?')) {
+                console.log('DEBUG: DataManagementTable - Confirm OK, sending DELETE for:', id);
+                try {
+                    await onDelete(id);
+                    console.log('DEBUG: DataManagementTable - Delete Success');
+                } catch (error) {
+                    console.error('DEBUG: DataManagementTable - Delete Failed:', error);
+                    alert('Lỗi xóa: ' + (error.response?.data?.error || error.message));
+                }
+            } else {
+                console.log('DEBUG: DataManagementTable - User Cancelled');
             }
-        }
+        }, 0);
     };
 
     const handleChange = (key, value) => {

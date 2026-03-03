@@ -43,11 +43,12 @@ const LoginPage = () => {
                     <div className="form-group">
                         <label htmlFor="email">Tên đăng nhập</label>
                         <input
-                            type="email"
+                            type="text"
                             id="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
+                            placeholder="Nhập tên đăng nhập hoặc email"
                         />
                     </div>
 

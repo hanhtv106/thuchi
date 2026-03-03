@@ -100,8 +100,41 @@
   background-color: #e2e8f0;
 }
 
-.text-blue { color: #2563eb; }
-.text-red { color: #dc2626; }
-.text-green { color: #16a34a; }
-.text-orange { color: #d97706; }
-.text-gray { color: #4b5563; }
+.text-blue {
+  color: #2563eb;
+}
+
+.text-red {
+  color: #dc2626;
+}
+
+.text-green {
+  color: #16a34a;
+}
+
+.text-orange {
+  color: #d97706;
+}
+
+.text-gray {
+  color: #4b5563;
+}
+
+.tx-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-indicator {
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  background-color: #f1f5f9;
+  padding: 2px;
+  border-radius: 4px;
+}

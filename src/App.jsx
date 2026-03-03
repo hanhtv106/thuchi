@@ -35,7 +35,7 @@ function App() {
                                     <Route path="/settlement" element={<SettlementPage />} />
 
                                     <Route path="/reports" element={
-                                        <ProtectedRoute allowedRoles={['admin', 'accountant']} />
+                                        <ProtectedRoute requiredPermission="REPORT_VIEW" />
                                     }>
                                         <Route index element={<Reports />} />
                                     </Route>

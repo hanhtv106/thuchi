@@ -57,61 +57,319 @@ export const numberToVietnameseWords = (number) => {
     return res.charAt(0).toUpperCase() + res.slice(1) + ' đồng';
 };
 
-export const exportToExcel = (transactions, categories = [], fileName = 'bao-cao-thu-chi') => {
-    const data = transactions.map(tx => {
-        const catName = categories.find(c => c.id === tx.categoryId)?.name || tx.categoryId;
-        return {
-            'Ngày': format(new Date(tx.date), 'dd/MM/yyyy'),
-            'Loại': tx.type === 'income' ? 'Thu' : 'Chi',
-            'Hạng mục': catName,
-            'Nội dung': tx.content,
-            'Đối tác': tx.partner || '',
-            'Số tiền': tx.amount,
-            'Trạng thái': tx.status === 'approved' ? 'Đã duyệt' : (tx.status === 'rejected' ? 'Từ chối' : 'Chờ duyệt')
-        };
-    });
+export const exportToExcel = (transactions, categories = [], units = [], partners = [], fileName = 'bao-cao-thu-chi') => {
+    const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const now = format(new Date(), 'dd/MM/yyyy HH:mm');
 
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Giao dịch');
-    XLSX.writeFile(workbook, `${fileName}.xlsx`);
-};
+    let totalIncome = 0;
+    let totalExpense = 0;
 
-export const exportToPDF = (transactions, categories = [], title = 'BAO CAO THU - CHI') => {
-    const doc = new jsPDF();
+    const types = [
+        { key: 'income', label: 'PHẦN I: CÁC KHOẢN THU', color: '#059669' },
+        { key: 'expense', label: 'PHẦN II: CÁC KHOẢN CHI', color: '#dc2626' }
+    ];
 
-    doc.setFontSize(18);
-    doc.text(removeAccents(title).toUpperCase(), 105, 20, { align: 'center' });
+    let rowsHtml = '';
+    types.forEach(typeObj => {
+        const typeItems = sortedTransactions.filter(t => t.type === typeObj.key);
+        if (typeItems.length > 0) {
+            rowsHtml += `
+                <tr style="background-color: #e5e7eb; font-weight: bold;">
+                    <td colspan="7" style="color: ${typeObj.color}; border: 1px solid #000; height: 30px; font-size: 13px;">${typeObj.label}</td>
+                </tr>
+            `;
 
-    doc.setFontSize(10);
-    doc.text(`Ngay xuat: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 30);
+            let typeTotal = 0;
+            const categoryIds = [...new Set(typeItems.map(t => t.categoryId))];
 
-    const tableColumn = ["Ngay", "Loai", "Hang muc", "Noi dung", "So tien", "Trang thai"];
-    const tableRows = transactions.map(tx => {
-        const catName = categories.find(c => c.id === tx.categoryId)?.name || tx.categoryId;
-        return [
-            format(new Date(tx.date), 'dd/MM/yyyy'),
-            tx.type === 'income' ? 'Thu' : 'Chi',
-            removeAccents(catName),
-            removeAccents(tx.content),
-            new Intl.NumberFormat('vi-VN').format(tx.amount),
-            tx.status === 'approved' ? 'Da duyet' : (tx.status === 'rejected' ? 'Tu choi' : 'Cho duyet')
-        ];
-    });
+            categoryIds.forEach(cid => {
+                const catName = categories.find(c => c.id === cid)?.name || cid;
+                const items = typeItems.filter(t => t.categoryId === cid);
 
-    doc.autoTable({
-        head: [tableColumn],
-        body: tableRows,
-        startY: 35,
-        theme: 'grid',
-        headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-        styles: { fontSize: 9, cellPadding: 3 },
-        columnStyles: {
-            4: { halign: 'right' }
+                rowsHtml += `
+                    <tr style="background-color: #f9fafb; font-weight: bold; font-style: italic;">
+                        <td colspan="7" style="border: 1px solid #000; padding-left: 20px; color: #4b5563;">Hạng mục: ${catName}</td>
+                    </tr>
+                `;
+
+                items.forEach(tx => {
+                    const partner = partners.find(p => p.id === tx.partnerId);
+                    const unit = units.find(u => u.id === tx.unitId);
+                    const partnerName = partner?.name || tx.receiver || '-';
+
+                    rowsHtml += `
+                        <tr>
+                            <td style="border: 1px solid #000; text-align: center;">${format(new Date(tx.date), 'dd/MM/yyyy')}</td>
+                            <td style="border: 1px solid #000;">${partnerName}</td>
+                            <td style="border: 1px solid #000;">${tx.content}</td>
+                            <td style="border: 1px solid #000; text-align: center;">${unit?.name || '-'}</td>
+                            <td style="border: 1px solid #000; text-align: center;">${tx.quantity || 1}</td>
+                            <td style="border: 1px solid #000; text-align: right;">${tx.unitPrice || 0}</td>
+                            <td style="border: 1px solid #000; text-align: right; font-weight: bold;">${tx.amount}</td>
+                        </tr>
+                    `;
+                });
+
+                const catTotal = items.reduce((s, i) => s + i.amount, 0);
+                rowsHtml += `
+                    <tr style="background-color: #f3f4f6; font-weight: bold;">
+                        <td colspan="6" style="border: 1px solid #000; text-align: right;">Cộng hạng mục (${catName}):</td>
+                        <td style="border: 1px solid #000; text-align: right;">${catTotal}</td>
+                    </tr>
+                `;
+                typeTotal += catTotal;
+            });
+
+            rowsHtml += `
+                <tr style="background-color: #d1d5db; font-weight: bold;">
+                    <td colspan="6" style="border: 1px solid #000; text-align: right; text-transform: uppercase;">TỔNG ${typeObj.label}:</td>
+                    <td style="border: 1px solid #000; text-align: right; border: 2px solid #000;">${typeTotal}</td>
+                </tr>
+            `;
+
+            if (typeObj.key === 'income') totalIncome = typeTotal;
+            else totalExpense = typeTotal;
         }
     });
 
-    doc.save('bao-cao-thu-chi.pdf');
+    const balance = totalIncome - totalExpense;
+
+    const html = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+            <meta charset="utf-8">
+            <style>
+                table { border-collapse: collapse; width: 100%; border: 2px solid #000; }
+                th { background-color: #2563eb; color: #ffffff; font-weight: bold; border: 1px solid #000; text-align: center; height: 35px; }
+                td { padding: 5px; vertical-align: middle; border: 1px solid #000; mso-number-format: "\\#\\,\\#\\#0"; }
+                .text-header { font-size: 16px; font-weight: bold; }
+                .report-title { font-size: 20px; font-weight: bold; text-align: center; }
+            </style>
+        </head>
+        <body>
+            <table>
+                <tr><td colspan="7" style="border:none;" class="text-header">CÔNG TY CỔ PHẦN SAMCO VINA</td></tr>
+                <tr><td colspan="7" style="border:none;">Số 03 đường số 1, KCN Sóng Thần, P. Dĩ An, TP. Hồ Chí Minh</td></tr>
+                <tr><td colspan="7" style="border:none;">MST: 0313121108 - Hotline: 0907 101 899</td></tr>
+                <tr><td colspan="7" style="border:none;"></td></tr>
+                <tr><td colspan="7" style="border:none;" class="report-title">BÁO CÁO CHI TIẾT THU CHI</td></tr>
+                <tr><td colspan="7" style="border:none; text-align: center;">Ngày xuất: ${now}</td></tr>
+                <tr><td colspan="7" style="border:none;"></td></tr>
+                <thead>
+                    <tr>
+                        <th style="width: 100px;">Ngày</th>
+                        <th style="width: 250px;">Đối tác / Người nhận</th>
+                        <th style="width: 350px;">Nội dung chi tiết</th>
+                        <th style="width: 80px;">ĐVT</th>
+                        <th style="width: 60px;">SL</th>
+                        <th style="width: 120px;">Đơn giá</th>
+                        <th style="width: 150px;">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                    <tr><td colspan="7" style="border:none;"></td></tr>
+                    <tr style="font-weight: bold; font-size: 14px;">
+                        <td colspan="6" style="text-align: right; border: 2px solid #000; background-color: #f8fafc;">TỔNG CỘNG THU TRONG KỲ:</td>
+                        <td style="text-align: right; border: 2px solid #000; background-color: #f0fdf4; color: #166534;">${totalIncome}</td>
+                    </tr>
+                    <tr style="font-weight: bold; font-size: 14px;">
+                        <td colspan="6" style="text-align: right; border: 2px solid #000; background-color: #f8fafc;">TỔNG CỘNG CHI TRONG KỲ:</td>
+                        <td style="text-align: right; border: 2px solid #000; background-color: #fef2f2; color: #991b1b;">${totalExpense}</td>
+                    </tr>
+                    <tr style="font-weight: bold; font-size: 16px; background-color: #fef3c7;">
+                        <td colspan="6" style="text-align: right; border: 2px solid #000;">CÂN ĐỐI DƯ CUỐI KỲ:</td>
+                        <td style="text-align: right; border: 2px solid #000; color: ${balance >= 0 ? '#166534' : '#991b1b'};">${balance}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </body>
+        </html>
+    `;
+
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${fileName}.xls`;
+    link.click();
+    URL.revokeObjectURL(url);
+};
+
+export const exportToPDF = (transactions, categories = [], units = [], partners = [], title = 'BÁO CÁO CHI TIẾT THU CHI') => {
+    const printWindow = window.open('', '_blank');
+    const now = format(new Date(), 'dd/MM/yyyy HH:mm');
+
+    // Sort transactions by date initially
+    const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Hierarchical Grouping: Type -> Category
+    const groupedStructure = [];
+    const types = [
+        { key: 'income', label: 'PHẦN I: CÁC KHOẢN THU', color: '#059669' },
+        { key: 'expense', label: 'PHẦN II: CÁC KHOẢN CHI', color: '#dc2626' }
+    ];
+
+    types.forEach(typeObj => {
+        const typeItems = sortedTransactions.filter(t => t.type === typeObj.key);
+        if (typeItems.length > 0) {
+            const categoryIds = [...new Set(typeItems.map(t => t.categoryId))];
+            const catGroups = categoryIds.map(cid => {
+                const catName = categories.find(c => c.id === cid)?.name || cid;
+                const items = typeItems.filter(t => t.categoryId === cid);
+                return {
+                    name: catName,
+                    items: items,
+                    total: items.reduce((sum, i) => sum + i.amount, 0)
+                };
+            });
+
+            groupedStructure.push({
+                label: typeObj.label,
+                color: typeObj.color,
+                categories: catGroups,
+                total: typeItems.reduce((sum, i) => sum + i.amount, 0)
+            });
+        }
+    });
+
+    const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const totalExpense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+    const balance = totalIncome - totalExpense;
+
+    const html = `
+        <html>
+        <head>
+            <title>${title}</title>
+            <style>
+                @media print { 
+                    @page { margin: 10mm; size: A4 landscape; } 
+                }
+                body { font-family: "Times New Roman", Times, serif; color: #333; line-height: 1.4; padding: 20px; }
+                .header { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                .company-info h2 { margin: 0; font-size: 18px; color: #000; }
+                .company-info p { margin: 2px 0; font-size: 12px; }
+                .report-title { text-align: center; margin: 15px 0; }
+                .report-title h1 { margin: 0; font-size: 22px; text-transform: uppercase; }
+                
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+                th, td { border: 1px solid #333; padding: 6px 5px; text-align: left; }
+                th { background-color: #f2f2f2; font-weight: bold; text-align: center; text-transform: uppercase; }
+                
+                .type-header { background-color: #e5e7eb; font-weight: bold; font-size: 13px; padding: 8px; }
+                .category-header { background-color: #f9fafb; font-weight: bold; font-style: italic; color: #4b5563; }
+                .total-row { background-color: #f3f4f6; font-weight: bold; }
+                
+                .text-right { text-align: right; }
+                .text-center { text-align: center; }
+                .amount-cell { font-family: "Courier New", Courier, monospace; font-weight: bold; font-size: 12px; }
+                
+                .footer { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr 1fr; text-align: center; }
+                .footer-item { font-weight: bold; margin-bottom: 70px; }
+                
+                .summary-box { margin-top: 20px; border: 2px solid #333; padding: 10px; display: inline-block; min-width: 350px; }
+                .summary-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
+                .font-bold { font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="company-info">
+                    <h2>CÔNG TY CỔ PHẦN SAMCO VINA</h2>
+                    <p>Địa chỉ: Số 03 đường số 1, KCN Sóng Thần, P. Dĩ An, TP. Hồ Chí Minh</p>
+                    <p>MST: 0313121108 - Hotline: 0907 101 899</p>
+                </div>
+                <div class="text-right">
+                    <p>Ngày xuất: ${now}</p>
+                </div>
+            </div>
+
+            <div class="report-title">
+                <h1>${title}</h1>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th width="80">Ngày</th>
+                        <th width="150">Đối tác / Người nhận</th>
+                        <th>Nội dung chi tiết giao dịch</th>
+                        <th width="80">ĐVT</th>
+                        <th width="60">SL</th>
+                        <th width="100">Đơn giá</th>
+                        <th width="120">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${groupedStructure.map(typeGroup => `
+                        <tr>
+                            <td colspan="7" class="type-header" style="color: ${typeGroup.color}">${typeGroup.label}</td>
+                        </tr>
+                        ${typeGroup.categories.map(cat => `
+                            <tr>
+                                <td colspan="7" class="category-header">&nbsp;&nbsp;&nbsp;&nbsp;Hạng mục: ${cat.name}</td>
+                            </tr>
+                            ${cat.items.map(tx => {
+        const partner = partners.find(p => p.id === tx.partnerId);
+        const unit = units.find(u => u.id === tx.unitId);
+        return `
+                                <tr>
+                                    <td class="text-center">${format(new Date(tx.date), 'dd/MM/yyyy')}</td>
+                                    <td>${partner?.name || tx.receiver || '-'}</td>
+                                    <td>${tx.content}</td>
+                                    <td class="text-center">${unit?.name || '-'}</td>
+                                    <td class="text-center">${tx.quantity || 1}</td>
+                                    <td class="text-right">${new Intl.NumberFormat('vi-VN').format(tx.unitPrice || 0)}</td>
+                                    <td class="text-right amount-cell">${new Intl.NumberFormat('vi-VN').format(tx.amount)}</td>
+                                </tr>
+                                `;
+    }).join('')}
+                            <tr class="total-row">
+                                <td colspan="6" class="text-right">Cộng hạng mục (${cat.name}):</td>
+                                <td class="text-right amount-cell">${new Intl.NumberFormat('vi-VN').format(cat.total)}</td>
+                            </tr>
+                        `).join('')}
+                        <tr class="total-row" style="background-color: #d1d5db;">
+                            <td colspan="6" class="text-right" style="text-transform: uppercase;">TỔNG ${typeGroup.label}:</td>
+                            <td class="text-right amount-cell" style="font-size: 13px;">${new Intl.NumberFormat('vi-VN').format(typeGroup.total)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+
+            <div class="summary-box">
+                <div class="summary-row">
+                    <span>Tổng cộng Thu trong kỳ:</span>
+                    <span class="font-bold">${new Intl.NumberFormat('vi-VN').format(totalIncome)}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Tổng cộng Chi trong kỳ:</span>
+                    <span class="font-bold">${new Intl.NumberFormat('vi-VN').format(totalExpense)}</span>
+                </div>
+                <div class="summary-row" style="border-top: 2px solid #333; padding-top: 5px; margin-top: 5px;">
+                    <span class="font-bold">CÂN ĐỐI DƯ CUỐI KỲ:</span>
+                    <span class="font-bold" style="font-size: 16px;">${new Intl.NumberFormat('vi-VN').format(balance)}</span>
+                </div>
+            </div>
+
+            <div class="footer">
+                <div class="footer-item"><p>NGƯỜI LẬP BIỂU</p></div>
+                <div class="footer-item"><p>KẾ TOÁN TRƯỞNG</p></div>
+                <div class="footer-item"><p>BAN GIÁM ĐỐC</p></div>
+            </div>
+
+            <script>
+                window.onload = function() {
+                    window.print();
+                    setTimeout(() => window.close(), 500);
+                }
+            </script>
+        </body>
+        </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
 };
 
 // Professional Print Voucher using hidden iframe and HTML/CSS for best quality & Vietnamese support
@@ -222,7 +480,7 @@ export const printVoucher = (tx) => {
 };
 
 // Professional Multi-Category Expenditure Report (Báo cáo giải chi)
-export const printProfessionalReport = (transactions, categories, startDate, endDate, user) => {
+export const printProfessionalReport = (transactions, categories, partners, units, startDate, endDate, user) => {
     const dateRange = startDate && endDate
         ? `${format(new Date(startDate), 'dd/MM/yyyy')} ĐẾN ${format(new Date(endDate), 'dd/MM/yyyy')}`
         : 'TẤT CẢ THỜI GIAN';
@@ -232,7 +490,11 @@ export const printProfessionalReport = (transactions, categories, startDate, end
     // Group transactions by category
     const groupedData = categories.map(cat => ({
         ...cat,
-        items: transactions.filter(tx => tx.categoryId === cat.id)
+        items: transactions.filter(tx => tx.categoryId === cat.id).map(tx => ({
+            ...tx,
+            partnerName: partners.find(p => p.id === tx.partnerId)?.name || tx.receiver || tx.partner || '',
+            unitName: units.find(u => u.id === tx.unitId)?.name || ''
+        }))
     })).filter(cat => cat.items.length > 0);
 
     const totalSpent = transactions
@@ -327,9 +589,9 @@ export const printProfessionalReport = (transactions, categories, startDate, end
                     <img src="${LOGO_URL}" alt="Logo" onerror="this.style.display='none'">
                 </div>
                 <div class="company-info">
-                    <h2>CÔNG TY CỔ PHẦN THIẾT BỊ NÂNG HOÀNG GIA</h2>
-                    <p>Địa chỉ:SỐ 19, ĐS 12, KNO HIỆP BÌNH PHƯỚC, KP2, HIỆP BÌNH, TPHCM</p>
-                    <p>MST: 0315840394 - Hotline: 0907 101 899</p>
+                    <h2>CÔNG TY CỔ PHẦN SAMCO VINA</h2>
+                    <p>Địa chỉ:Số 03 đường số 1, KCN Sóng Thần, P. Dĩ An, TP. Hồ Chí Minh</p>
+                    <p>MST: 0313121108 - Hotline: 0907 101 899</p>
                 </div>
             </div>
 
@@ -342,19 +604,18 @@ export const printProfessionalReport = (transactions, categories, startDate, end
                     <tr>
                         <th width="75">Ngày</th>
                         <th class="text-left">Nội dung</th>
-                        <th width="40">ĐVT</th>
+                        <th width="50">ĐVT</th>
                         <th width="35">SL</th>
                         <th width="85">Đơn Giá</th>
                         <th width="90">Thành Tiền</th>
-                        <th width="65">Số HĐ</th>
-                        <th class="text-left">Nhà cung cấp</th>
+                        <th class="text-left">Đối tác</th>
                         <th width="100">Chứng từ</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${groupedData.map((cat, catIdx) => `
                         <tr class="category-header-row">
-                            <td colspan="9">${cat.name.toUpperCase()}</td>
+                            <td colspan="8">${cat.name.toUpperCase()}</td>
                         </tr>
                         ${cat.items.map((tx, txIdx) => {
         const txKey = `tx_${catIdx}_${txIdx}`;
@@ -362,12 +623,11 @@ export const printProfessionalReport = (transactions, categories, startDate, end
                             <tr>
                                 <td class="text-center">${format(new Date(tx.date), 'dd/MM/yyyy')}</td>
                                 <td class="text-left">${tx.content}</td>
-                                <td class="text-center">${tx.unit || ''}</td>
+                                <td class="text-center">${tx.unitName}</td>
                                 <td class="text-center">${tx.quantity || 1}</td>
                                 <td class="text-right">${new Intl.NumberFormat('vi-VN').format(tx.unitPrice || 0)}</td>
                                 <td class="text-right">${new Intl.NumberFormat('vi-VN').format(tx.amount)}</td>
-                                <td class="text-center">${tx.id.substring(0, 6).toUpperCase()}</td>
-                                <td class="text-left">${tx.partner || ''}</td>
+                                <td class="text-left">${tx.partnerName}</td>
                                 <td class="text-center">
                                     ${tx.attachments?.length > 0
                 ? tx.attachments.map((att, idx) =>
@@ -383,7 +643,7 @@ export const printProfessionalReport = (transactions, categories, startDate, end
                         <tr class="total-row">
                             <td colspan="5" class="text-right">TỔNG NHÓM (${cat.name})</td>
                             <td class="text-right">${new Intl.NumberFormat('vi-VN').format(cat.items.reduce((s, i) => s + i.amount, 0))}</td>
-                            <td colspan="3"></td>
+                            <td colspan="2"></td>
                         </tr>
                     `).join('')}
                     
@@ -391,17 +651,17 @@ export const printProfessionalReport = (transactions, categories, startDate, end
                     <tr class="total-row" style="border-top: 2px solid #000;">
                         <td colspan="5" class="text-right" style="padding: 10px; font-size: 14px;">TỔNG SỐ TIỀN ĐÃ CHI</td>
                         <td class="text-right" style="padding: 10px; font-size: 14px;">${new Intl.NumberFormat('vi-VN').format(totalSpent)}</td>
-                        <td colspan="3"></td>
+                        <td colspan="2"></td>
                     </tr>
                     <tr class="total-row">
                         <td colspan="5" class="text-right" style="padding: 10px; font-size: 14px;">SỐ TIỀN THU</td>
                         <td class="text-right" style="padding: 10px; font-size: 14px;">${new Intl.NumberFormat('vi-VN').format(advanceAmount)}</td>
-                        <td colspan="3"></td>
+                        <td colspan="2"></td>
                     </tr>
                     <tr class="total-row">
                         <td colspan="5" class="text-right" style="padding: 10px; font-size: 14px;">${balanceLabel}</td>
                         <td class="text-right" style="padding: 10px; font-size: 14px;">${new Intl.NumberFormat('vi-VN').format(displayBalance)}</td>
-                        <td colspan="3"></td>
+                        <td colspan="2"></td>
                     </tr>
                 </tbody>
             </table>
