@@ -10,17 +10,16 @@ const Dashboard = () => {
     const { user, hasPermission } = useAuth();
 
     const summary = useMemo(() => {
-        // Current month summary
+        // Current year summary
         const now = new Date();
-        const currentMonthData = transactions.filter(tx => {
+        const currentYearData = transactions.filter(tx => {
             const d = new Date(tx.date);
-            return d.getMonth() === now.getMonth() &&
-                d.getFullYear() === now.getFullYear() &&
+            return d.getFullYear() === now.getFullYear() &&
                 tx.status === 'approved' && !tx.isDeleted;
         });
 
-        const income = currentMonthData.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-        const expense = currentMonthData.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+        const income = currentYearData.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+        const expense = currentYearData.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
 
         return { income, expense, balance: income - expense };
     }, [transactions]);
@@ -45,20 +44,20 @@ const Dashboard = () => {
         <div className="dashboard">
             <div style={{ marginBottom: '2rem' }}>
                 <h2>Xin chào, {user?.fullName}!</h2>
-                <p>Tổng quan tài chính tháng {new Date().getMonth() + 1}/{new Date().getFullYear()}</p>
+                <p>Tổng quan tài chính năm {new Date().getFullYear()}</p>
             </div>
 
             <div className="summary-cards" style={{ marginBottom: '2rem' }}>
                 <div className="card income">
-                    <h3>Thu tháng này</h3>
+                    <h3>Tổng thu năm nay</h3>
                     <p>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(summary.income)}</p>
                 </div>
                 <div className="card expense">
-                    <h3>Chi tháng này</h3>
+                    <h3>Tổng chi năm nay</h3>
                     <p>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(summary.expense)}</p>
                 </div>
                 <div className="card balance">
-                    <h3>Số dư tháng này</h3>
+                    <h3>Số dư năm nay</h3>
                     <p>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(summary.balance)}</p>
                 </div>
             </div>
