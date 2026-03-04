@@ -44,13 +44,20 @@ function App() {
                                         <Route index element={<Reports />} />
                                     </Route>
 
-                                    <Route path="/admin" element={
-                                        <ProtectedRoute allowedRoles={['admin']} />
-                                    }>
-                                        <Route index element={<AdminPage />} />
+                                    <Route path="/admin">
                                         <Route path="master-data" element={<MasterDataPage />} />
-                                        <Route path="rbac" element={<AdminRBAC />} />
+                                        <Route path="rbac" element={
+                                            <ProtectedRoute requiredPermission="SYSTEM_MANAGE" />
+                                        }>
+                                            <Route index element={<AdminRBAC />} />
+                                        </Route>
+                                        <Route index element={
+                                            <ProtectedRoute allowedRoles={['admin']} />
+                                        }>
+                                            <Route index element={<AdminPage />} />
+                                        </Route>
                                     </Route>
+
                                 </Route>
                             </Route>
 
