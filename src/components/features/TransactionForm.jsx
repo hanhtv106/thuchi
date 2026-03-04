@@ -43,7 +43,7 @@ const TransactionForm = ({ onClose, initialData }) => {
     }, [initialData, categories, formData.type]);
 
     useEffect(() => {
-        const subtotal = (parseFloat(formData.quantity) || 0) * (parseFloat(formData.unitPrice) || 0);
+        const subtotal = Math.round((parseFloat(formData.quantity) || 0) * (parseFloat(formData.unitPrice) || 0));
         const vatPercentage = parseFloat(formData.vatPercentage) || 0;
         const vatAmount = Math.round(subtotal * (vatPercentage / 100));
         const totalAmount = Math.round(subtotal + vatAmount);
@@ -242,7 +242,7 @@ const TransactionForm = ({ onClose, initialData }) => {
                     <div className="form-row">
                         <div className="form-group">
                             <label>Số lượng</label>
-                            <input type="text" name="quantity" value={formatDisplayNumber(formData.quantity)} onChange={handleNumberFormatChange} />
+                            <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} min="0" step="any" />
                         </div>
 
                         <div className="form-group">
