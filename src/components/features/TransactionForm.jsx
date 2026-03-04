@@ -195,7 +195,33 @@ const TransactionForm = ({ onClose, initialData }) => {
 
                         <div className="form-group">
                             <label>Ngày chứng từ</label>
-                            <input type="date" name="date" value={formData.date} onChange={handleChange} required />
+                            <div style={{ position: 'relative', display: 'block' }}>
+                                <input
+                                    type="text"
+                                    value={
+                                        formData.date
+                                            ? `${formData.date.split('-')[2]}/${formData.date.split('-')[1]}/${formData.date.split('-')[0]}`
+                                            : ''
+                                    }
+                                    readOnly
+                                    style={{ width: '100%', backgroundColor: 'transparent', cursor: 'pointer' }}
+                                />
+                                <input
+                                    type="date"
+                                    name="date"
+                                    value={formData.date}
+                                    onChange={handleChange}
+                                    required
+                                    style={{
+                                        position: 'absolute',
+                                        inset: 0,
+                                        opacity: 0,
+                                        width: '100%',
+                                        height: '100%',
+                                        cursor: 'pointer',
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
 
