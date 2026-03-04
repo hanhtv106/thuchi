@@ -71,7 +71,8 @@ const TransactionList = ({ onEdit }) => {
                         <th>Loại</th>
                         <th>Hạng mục</th>
                         <th>Nội dung</th>
-                        <th>Thành tiền</th>
+                        <th>Thành tiền (trước VAT)</th>
+                        <th>Thành tiền (sau VAT)</th>
                         <th>Trạng thái</th>
                         <th>Hành động</th>
                     </tr>
@@ -103,6 +104,9 @@ const TransactionList = ({ onEdit }) => {
                                     )}
                                 </div>
                                 <small>{getPartnerName(tx.partnerId)}</small>
+                            </td>
+                            <td className={`amount ${tx.type}`}>
+                                <div>{tx.type === 'income' ? '+' : '-'}{formatCurrency((tx.quantity * tx.unitPrice) || 0)}</div>
                             </td>
                             <td className={`amount ${tx.type}`}>
                                 <div>{tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}</div>

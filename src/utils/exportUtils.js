@@ -105,6 +105,7 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
                             <td style="border: 1px solid #000; text-align: center;">${unit?.name || '-'}</td>
                             <td style="border: 1px solid #000; text-align: center;">${tx.quantity || 1}</td>
                             <td style="border: 1px solid #000; text-align: right;">${tx.unitPrice || 0}</td>
+                            <td style="border: 1px solid #000; text-align: right;">${(tx.quantity * tx.unitPrice) || 0}</td>
                             <td style="border: 1px solid #000; text-align: right;">${tx.vatAmount || 0}</td>
                             <td style="border: 1px solid #000; text-align: right; font-weight: bold;">${tx.amount}</td>
                         </tr>
@@ -150,14 +151,14 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
         </head>
         <body>
             <table>
-                <tr><td colspan="8" style="border:none;" class="text-header">CÔNG TY CỔ PHẦN SAMCO VINA</td></tr>
-                <tr><td colspan="8" style="border:none;">Số 03 đường số 1, KCN Sóng Thần, P. Dĩ An, TP. Hồ Chí Minh</td></tr>
-                <tr><td colspan="8" style="border:none;">MST: 0313121108 - Hotline: 0907 101 899</td></tr>
-                <tr><td colspan="8" style="border:none;"></td></tr>
-                <tr><td colspan="8" style="border:none;" class="report-title">BÁO CÁO CHI TIẾT THU CHI</td></tr>
+                <tr><td colspan="9" style="border:none;" class="text-header">CÔNG TY CỔ PHẦN SAMCO VINA</td></tr>
+                <tr><td colspan="9" style="border:none;">Số 03 đường số 1, KCN Sóng Thần, P. Dĩ An, TP. Hồ Chí Minh</td></tr>
+                <tr><td colspan="9" style="border:none;">MST: 0313121108 - Hotline: 0907 101 899</td></tr>
+                <tr><td colspan="9" style="border:none;"></td></tr>
+                <tr><td colspan="9" style="border:none;" class="report-title">BÁO CÁO CHI TIẾT THU CHI</td></tr>
 
-                <tr><td colspan="8" style="border:none; text-align: center;">Ngày xuất: ${now}</td></tr>
-                <tr><td colspan="8" style="border:none;"></td></tr>
+                <tr><td colspan="9" style="border:none; text-align: center;">Ngày xuất: ${now}</td></tr>
+                <tr><td colspan="9" style="border:none;"></td></tr>
                 <thead>
                     <tr>
                         <th style="width: 100px;">Ngày</th>
@@ -166,6 +167,7 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
                         <th style="width: 80px;">ĐVT</th>
                         <th style="width: 60px;">SL</th>
                         <th style="width: 120px;">Đơn giá</th>
+                        <th style="width: 150px;">Thành tiền (chưa VAT)</th>
                         <th style="width: 100px;">Thuế VAT</th>
                         <th style="width: 150px;">Tổng tiền</th>
                     </tr>
@@ -173,17 +175,17 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
 
                 <tbody>
                     ${rowsHtml}
-                    <tr><td colspan="8" style="border:none;"></td></tr>
+                    <tr><td colspan="9" style="border:none;"></td></tr>
                     <tr style="font-weight: bold; font-size: 14px;">
-                        <td colspan="7" style="text-align: right; border: 2px solid #000; background-color: #f8fafc;">TỔNG CỘNG THU TRONG KỲ:</td>
+                        <td colspan="8" style="text-align: right; border: 2px solid #000; background-color: #f8fafc;">TỔNG CỘNG THU TRONG KỲ:</td>
                         <td style="text-align: right; border: 2px solid #000; background-color: #f0fdf4; color: #166534;">${totalIncome}</td>
                     </tr>
                     <tr style="font-weight: bold; font-size: 14px;">
-                        <td colspan="7" style="text-align: right; border: 2px solid #000; background-color: #f8fafc;">TỔNG CỘNG CHI TRONG KỲ:</td>
+                        <td colspan="8" style="text-align: right; border: 2px solid #000; background-color: #f8fafc;">TỔNG CỘNG CHI TRONG KỲ:</td>
                         <td style="text-align: right; border: 2px solid #000; background-color: #fef2f2; color: #991b1b;">${totalExpense}</td>
                     </tr>
                     <tr style="font-weight: bold; font-size: 16px; background-color: #fef3c7;">
-                        <td colspan="7" style="text-align: right; border: 2px solid #000;">CÂN ĐỐI DƯ CUỐI KỲ:</td>
+                        <td colspan="8" style="text-align: right; border: 2px solid #000;">CÂN ĐỐI DƯ CUỐI KỲ:</td>
                         <td style="text-align: right; border: 2px solid #000; color: ${balance >= 0 ? '#166534' : '#991b1b'};">${balance}</td>
                     </tr>
                 </tbody>

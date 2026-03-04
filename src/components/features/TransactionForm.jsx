@@ -25,7 +25,8 @@ const TransactionForm = ({ onClose, initialData }) => {
         attachments: [],
         vatPercentage: 0,
         vatAmount: 0,
-        voucherCode: ''
+        voucherCode: '',
+        subtotal: 0
     });
 
 
@@ -50,9 +51,26 @@ const TransactionForm = ({ onClose, initialData }) => {
         setFormData(prev => ({
             ...prev,
             vatAmount: vatAmount,
-            amount: totalAmount
+            amount: totalAmount,
+            subtotal: subtotal
         }));
     }, [formData.quantity, formData.unitPrice, formData.vatPercentage]);
+
+    const formatDisplayNumber = (val) => {
+        if (val === null || val === undefined || val === '') return '';
+        const parts = val.toString().replace(/\./g, ',').split(',');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        return parts.length > 1 ? `${parts[0]},${parts[1]}` : parts[0];
+    };
+
+    const handleNumberFormatChange = (e) => {
+        const { name, value } = e.target;
+        let cleanVal = value.replace(/\./g, '').replace(/,/g, '.');
+        cleanVal = cleanVal.replace(/[^0-9.]/g, '');
+        const parts = cleanVal.split('.');
+        if (parts.length > 2) cleanVal = parts[0] + '.' + parts.slice(1).join('');
+        setFormData(prev => ({ ...prev, [name]: cleanVal }));
+    };
 
 
 
@@ -221,10 +239,10 @@ const TransactionForm = ({ onClose, initialData }) => {
                         <textarea name="content" value={formData.content} onChange={handleChange} required rows={2} />
                     </div>
 
-                    <div className="form-row three-cols">
+                    <div className="form-row">
                         <div className="form-group">
                             <label>Số lượng</label>
-                            <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} min="0" step="any" />
+                            <input type="text" name="quantity" value={formatDisplayNumber(formData.quantity)} onChange={handleNumberFormatChange} />
                         </div>
 
                         <div className="form-group">
@@ -239,12 +257,19 @@ const TransactionForm = ({ onClose, initialData }) => {
                         <div className="form-group">
                             <label>Đơn giá</label>
                             <input
-                                type="number"
+                                type="text"
                                 name="unitPrice"
-                                value={formData.unitPrice || ''}
-                                onChange={handleChange}
-                                min="0"
-                                step="any"
+                                value={formatDisplayNumber(formData.unitPrice)}
+                                onChange={handleNumberFormatChange}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Thành tiền (trước VAT)</label>
+                            <input
+                                type="text"
+                                value={new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(formData.subtotal || 0)}
+                                readOnly
+                                className="readonly-amount highlight-total"
                             />
                         </div>
                     </div>
