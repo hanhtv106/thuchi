@@ -44,8 +44,8 @@ const TransactionForm = ({ onClose, initialData }) => {
     useEffect(() => {
         const subtotal = (parseFloat(formData.quantity) || 0) * (parseFloat(formData.unitPrice) || 0);
         const vatPercentage = parseFloat(formData.vatPercentage) || 0;
-        const vatAmount = subtotal * (vatPercentage / 100);
-        const totalAmount = subtotal + vatAmount;
+        const vatAmount = Math.round(subtotal * (vatPercentage / 100));
+        const totalAmount = Math.round(subtotal + vatAmount);
 
         setFormData(prev => ({
             ...prev,
@@ -265,7 +265,7 @@ const TransactionForm = ({ onClose, initialData }) => {
                             <label>Tiền thuế VAT</label>
                             <input
                                 type="text"
-                                value={new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(formData.vatAmount)}
+                                value={new Intl.NumberFormat('vi-VN').format(formData.vatAmount)}
                                 readOnly
                                 className="readonly-amount"
                             />
@@ -274,7 +274,7 @@ const TransactionForm = ({ onClose, initialData }) => {
                             <label>Tổng thanh toán</label>
                             <input
                                 type="text"
-                                value={new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(formData.amount)}
+                                value={new Intl.NumberFormat('vi-VN').format(formData.amount)}
                                 readOnly
                                 className="readonly-amount highlight-total"
                             />
