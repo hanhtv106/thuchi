@@ -44,7 +44,7 @@ const TransactionForm = ({ onClose, initialData }) => {
         const subtotal = (parseFloat(formData.quantity) || 0) * (parseFloat(formData.unitPrice) || 0);
         const vatPercentage = parseFloat(formData.vatPercentage) || 0;
         const vatAmount = Math.round(subtotal * (vatPercentage / 100));
-        const totalAmount = subtotal + vatAmount;
+        const totalAmount = Math.round(subtotal + vatAmount);
 
         setFormData(prev => ({
             ...prev,
@@ -52,6 +52,7 @@ const TransactionForm = ({ onClose, initialData }) => {
             amount: totalAmount
         }));
     }, [formData.quantity, formData.unitPrice, formData.vatPercentage]);
+
 
 
     const handleChange = (e) => {
@@ -218,8 +219,9 @@ const TransactionForm = ({ onClose, initialData }) => {
                     <div className="form-row three-cols">
                         <div className="form-group">
                             <label>Số lượng</label>
-                            <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} min="1" />
+                            <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} min="0" step="any" />
                         </div>
+
                         <div className="form-group">
                             <label>Đơn vị tính</label>
                             <select name="unitId" value={formData.unitId} onChange={handleChange}>
@@ -265,7 +267,7 @@ const TransactionForm = ({ onClose, initialData }) => {
                             />
                         </div>
                         <div className="form-group">
-                            <label>Tổng thanh toán (Tự động)</label>
+                            <label>Tổng thanh toán</label>
                             <input
                                 type="text"
                                 value={new Intl.NumberFormat('vi-VN').format(formData.amount)}
@@ -274,6 +276,7 @@ const TransactionForm = ({ onClose, initialData }) => {
                             />
                         </div>
                     </div>
+
 
 
                     <div className="form-row">
