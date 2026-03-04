@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { X, Upload, Plus } from 'lucide-react';
 import clsx from 'clsx';
+import Select from 'react-select';
 import './TransactionForm.css'; // We'll create this
 
 const TransactionForm = ({ onClose, initialData }) => {
@@ -119,6 +120,12 @@ const TransactionForm = ({ onClose, initialData }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!formData.categoryId) {
+            showNotification('Vui lòng chọn hạng mục!', 'error');
+            return;
+        }
+
         setIsUploading(true);
         try {
             // 1. Upload new attachments
@@ -186,6 +193,30 @@ const TransactionForm = ({ onClose, initialData }) => {
 
     const filteredCategories = categories.filter(c => c.type === formData.type);
 
+    const selectStyles = {
+        control: (base) => ({
+            ...base,
+            minHeight: '38px',
+            borderRadius: '0.375rem',
+            borderColor: '#d1d5db',
+            boxShadow: 'none',
+            '&:hover': { borderColor: '#9ca3af' }
+        }),
+        valueContainer: (base) => ({ ...base, padding: '0 8px' }),
+        input: (base) => ({ ...base, margin: '0', padding: '0' }),
+        menu: (base) => ({ ...base, zIndex: 9999 })
+    };
+
+    const categoryOptions = filteredCategories.map(cat => ({ value: cat.id, label: cat.name }));
+    const unitOptions = units.map(u => ({ value: u.id, label: u.name }));
+    const partnerOptions = partners
+        .filter(p => !p.type || p.type === 'both' || (formData.type === 'income' ? p.type === 'customer' : p.type === 'supplier'))
+        .map(p => ({ value: p.id, label: p.name }));
+
+    const handleSelectChange = (name, selectedOption) => {
+        setFormData(prev => ({ ...prev, [name]: selectedOption ? selectedOption.value : '' }));
+    };
+
     return (
         <div className="modal-overlay">
             <div className="modal-content">
@@ -224,22 +255,26 @@ const TransactionForm = ({ onClose, initialData }) => {
 
                     <div className="form-row" style={{ display: 'flex', gap: '1rem' }}>
                         <div className="form-group" style={{ flex: 2 }}>
-                            <label>Hạng mục</label>
-                            <select name="categoryId" value={formData.categoryId} onChange={handleChange} required>
-                                <option value="">-- Chọn hạng mục --</option>
-                                {filteredCategories.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                ))}
-                            </select>
+                            <label>Hạng mục <span style={{ color: 'red' }}>*</span></label>
+                            <Select
+                                value={categoryOptions.find(o => o.value === formData.categoryId) || null}
+                                onChange={(selected) => handleSelectChange('categoryId', selected)}
+                                options={categoryOptions}
+                                placeholder="-- Chọn hạng mục --"
+                                isClearable
+                                styles={selectStyles}
+                            />
                         </div>
                         <div className="form-group" style={{ flex: 1 }}>
                             <label>Đơn vị tính</label>
-                            <select name="unitId" value={formData.unitId} onChange={handleChange}>
-                                <option value="">-- Chọn đơn vị --</option>
-                                {units.map(u => (
-                                    <option key={u.id} value={u.id}>{u.name}</option>
-                                ))}
-                            </select>
+                            <Select
+                                value={unitOptions.find(o => o.value === formData.unitId) || null}
+                                onChange={(selected) => handleSelectChange('unitId', selected)}
+                                options={unitOptions}
+                                placeholder="-- Chọn đơn vị --"
+                                isClearable
+                                styles={selectStyles}
+                            />
                         </div>
                     </div>
 
@@ -316,18 +351,14 @@ const TransactionForm = ({ onClose, initialData }) => {
                         </div>
                         <div className="form-group">
                             <label>{formData.type === 'income' ? 'Khách hàng' : 'Nhà cung cấp'}</label>
-                            <select name="partnerId" value={formData.partnerId} onChange={handleChange}>
-                                <option value="">-- Chọn đối tác --</option>
-                                {partners
-                                    .filter(p => {
-                                        if (!p.type) return true; // Hiển thị nếu không có loại (dữ liệu cũ)
-                                        if (p.type === 'both') return true; // Hiển thị nếu là cả hai
-                                        return formData.type === 'income' ? p.type === 'customer' : p.type === 'supplier';
-                                    })
-                                    .map(p => (
-                                        <option key={p.id} value={p.id}>{p.name}</option>
-                                    ))}
-                            </select>
+                            <Select
+                                value={partnerOptions.find(o => o.value === formData.partnerId) || null}
+                                onChange={(selected) => handleSelectChange('partnerId', selected)}
+                                options={partnerOptions}
+                                placeholder="-- Chọn đối tác --"
+                                isClearable
+                                styles={selectStyles}
+                            />
                         </div>
                     </div>
 
