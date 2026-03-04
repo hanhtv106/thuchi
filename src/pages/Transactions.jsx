@@ -25,6 +25,16 @@ const Transactions = () => {
         setEditingItem(null);
     };
 
+    if (!hasPermission('TRANSACTION_VIEW')) {
+        return (
+            <div className="transaction-page">
+                <div className="error-container">
+                    <h3>Bạn không có quyền xem danh sách giao dịch</h3>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="transaction-page">
             <div className="page-actions">
@@ -45,6 +55,7 @@ const Transactions = () => {
             )}
         </div>
     );
+
 };
 
 export default Transactions;

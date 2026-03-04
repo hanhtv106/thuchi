@@ -2,12 +2,26 @@ import { useState, useMemo } from 'react';
 import { useTransactions } from '../context/TransactionContext';
 import { format } from 'date-fns';
 import { CheckCircle, Filter, RotateCcw } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+
 import './SettlementPage.css';
 
 const SettlementPage = () => {
     const { transactions, settleTransaction, settleMultipleTransactions, unsettleTransaction, categories, partners } = useTransactions();
+    const { hasPermission } = useAuth();
     const [filterType, setFilterType] = useState('all'); // all, income, expense
     const [settlementStatus, setSettlementStatus] = useState('unsettled'); // unsettled, settled
+
+    if (!hasPermission('SETTLEMENT_VIEW')) {
+        return (
+            <div className="settlement-page">
+                <div style={{ padding: '2rem', textAlign: 'center' }}>
+                    <h3>Bạn không có quyền truy cập quản lý tất toán</h3>
+                </div>
+            </div>
+        );
+    }
+
 
     // Filter transactions
     const filteredTransactions = useMemo(() => {

@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useTransactions } from '../context/TransactionContext';
+import { useAuth } from '../context/AuthContext';
 import DataManagementTable from '../components/common/DataManagementTable';
 import './MasterDataPage.css';
+
+
 
 const MasterDataPage = () => {
     const {
@@ -9,6 +12,18 @@ const MasterDataPage = () => {
         units, addUnit, updateUnit, deleteUnit,
         partners, addPartner, updatePartner, deletePartner
     } = useTransactions();
+    const { hasPermission } = useAuth();
+
+    if (!hasPermission('MASTER_DATA_VIEW')) {
+        return (
+            <div className="master-data-page">
+                <div style={{ padding: '2rem', textAlign: 'center' }}>
+                    <h3>Bạn không có quyền xem dữ liệu hệ thống</h3>
+                </div>
+            </div>
+        );
+    }
+
 
     const [activeTab, setActiveTab] = useState('categories');
 

@@ -12,7 +12,18 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarEle
 
 const Reports = () => {
     const { transactions, categories, units, partners } = useTransactions();
-    const { user } = useAuth();
+    const { user, hasPermission } = useAuth();
+
+    if (!hasPermission('REPORT_VIEW')) {
+        return (
+            <div className="reports-page">
+                <div style={{ padding: '2rem', textAlign: 'center' }}>
+                    <h3>Bạn không có quyền xem báo cáo</h3>
+                </div>
+            </div>
+        );
+    }
+
     const [filterType, setFilterType] = useState('all');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
