@@ -222,13 +222,22 @@ const TransactionForm = ({ onClose, initialData }) => {
                         </div>
                     </div>
 
-                    <div className="form-row">
-                        <div className="form-group full">
+                    <div className="form-row" style={{ display: 'flex', gap: '1rem' }}>
+                        <div className="form-group" style={{ flex: 2 }}>
                             <label>Hạng mục</label>
                             <select name="categoryId" value={formData.categoryId} onChange={handleChange} required>
                                 <option value="">-- Chọn hạng mục --</option>
                                 {filteredCategories.map(cat => (
                                     <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="form-group" style={{ flex: 1 }}>
+                            <label>Đơn vị tính</label>
+                            <select name="unitId" value={formData.unitId} onChange={handleChange}>
+                                <option value="">-- Chọn đơn vị --</option>
+                                {units.map(u => (
+                                    <option key={u.id} value={u.id}>{u.name}</option>
                                 ))}
                             </select>
                         </div>
@@ -245,15 +254,7 @@ const TransactionForm = ({ onClose, initialData }) => {
                             <input type="text" name="quantity" value={formatDisplayNumber(formData.quantity)} onChange={handleNumberFormatChange} />
                         </div>
 
-                        <div className="form-group">
-                            <label>Đơn vị tính</label>
-                            <select name="unitId" value={formData.unitId} onChange={handleChange}>
-                                <option value="">-- Chọn đơn vị --</option>
-                                {units.map(u => (
-                                    <option key={u.id} value={u.id}>{u.name}</option>
-                                ))}
-                            </select>
-                        </div>
+
                         <div className="form-group">
                             <label>Đơn giá</label>
                             <input
