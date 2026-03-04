@@ -235,6 +235,13 @@
     background-color: #f3f4f6;
 }
 
+.highlight-total {
+    background-color: #fffbeb !important;
+    color: #b45309;
+    border: 1px solid #fcd34d !important;
+}
+
+
 .form-actions {
     display: flex;
     justify-content: flex-end;

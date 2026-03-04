@@ -98,8 +98,14 @@ const TransactionList = ({ onEdit }) => {
                                 <small>{getPartnerName(tx.partnerId)}</small>
                             </td>
                             <td className={`amount ${tx.type}`}>
-                                {tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}
+                                <div>{tx.type === 'income' ? '+' : '-'}{formatCurrency(tx.amount)}</div>
+                                {tx.vatPercentage > 0 && (
+                                    <div style={{ fontSize: '0.7rem', fontWeight: 'normal', color: '#6b7280' }}>
+                                        (VAT {tx.vatPercentage}%)
+                                    </div>
+                                )}
                             </td>
+
                             <td>
                                 <span className={`status-badge ${tx.status}`}>
                                     {tx.status === 'pending' ? 'Chờ duyệt' :

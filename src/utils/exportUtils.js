@@ -75,7 +75,7 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
         if (typeItems.length > 0) {
             rowsHtml += `
                 <tr style="background-color: #e5e7eb; font-weight: bold;">
-                    <td colspan="7" style="color: ${typeObj.color}; border: 1px solid #000; height: 30px; font-size: 13px;">${typeObj.label}</td>
+                    <td colspan="8" style="color: ${typeObj.color}; border: 1px solid #000; height: 30px; font-size: 13px;">${typeObj.label}</td>
                 </tr>
             `;
 
@@ -88,7 +88,7 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
 
                 rowsHtml += `
                     <tr style="background-color: #f9fafb; font-weight: bold; font-style: italic;">
-                        <td colspan="7" style="border: 1px solid #000; padding-left: 20px; color: #4b5563;">Hạng mục: ${catName}</td>
+                        <td colspan="8" style="border: 1px solid #000; padding-left: 20px; color: #4b5563;">Hạng mục: ${catName}</td>
                     </tr>
                 `;
 
@@ -105,15 +105,17 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
                             <td style="border: 1px solid #000; text-align: center;">${unit?.name || '-'}</td>
                             <td style="border: 1px solid #000; text-align: center;">${tx.quantity || 1}</td>
                             <td style="border: 1px solid #000; text-align: right;">${tx.unitPrice || 0}</td>
+                            <td style="border: 1px solid #000; text-align: right;">${tx.vatAmount || 0}</td>
                             <td style="border: 1px solid #000; text-align: right; font-weight: bold;">${tx.amount}</td>
                         </tr>
+
                     `;
                 });
 
                 const catTotal = items.reduce((s, i) => s + i.amount, 0);
                 rowsHtml += `
                     <tr style="background-color: #f3f4f6; font-weight: bold;">
-                        <td colspan="6" style="border: 1px solid #000; text-align: right;">Cộng hạng mục (${catName}):</td>
+                        <td colspan="7" style="border: 1px solid #000; text-align: right;">Cộng hạng mục (${catName}):</td>
                         <td style="border: 1px solid #000; text-align: right;">${catTotal}</td>
                     </tr>
                 `;
@@ -122,7 +124,7 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
 
             rowsHtml += `
                 <tr style="background-color: #d1d5db; font-weight: bold;">
-                    <td colspan="6" style="border: 1px solid #000; text-align: right; text-transform: uppercase;">TỔNG ${typeObj.label}:</td>
+                    <td colspan="7" style="border: 1px solid #000; text-align: right; text-transform: uppercase;">TỔNG ${typeObj.label}:</td>
                     <td style="border: 1px solid #000; text-align: right; border: 2px solid #000;">${typeTotal}</td>
                 </tr>
             `;
@@ -148,13 +150,14 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
         </head>
         <body>
             <table>
-                <tr><td colspan="7" style="border:none;" class="text-header">CÔNG TY CỔ PHẦN SAMCO VINA</td></tr>
-                <tr><td colspan="7" style="border:none;">Số 03 đường số 1, KCN Sóng Thần, P. Dĩ An, TP. Hồ Chí Minh</td></tr>
-                <tr><td colspan="7" style="border:none;">MST: 0313121108 - Hotline: 0907 101 899</td></tr>
-                <tr><td colspan="7" style="border:none;"></td></tr>
-                <tr><td colspan="7" style="border:none;" class="report-title">BÁO CÁO CHI TIẾT THU CHI</td></tr>
-                <tr><td colspan="7" style="border:none; text-align: center;">Ngày xuất: ${now}</td></tr>
-                <tr><td colspan="7" style="border:none;"></td></tr>
+                <tr><td colspan="8" style="border:none;" class="text-header">CÔNG TY CỔ PHẦN SAMCO VINA</td></tr>
+                <tr><td colspan="8" style="border:none;">Số 03 đường số 1, KCN Sóng Thần, P. Dĩ An, TP. Hồ Chí Minh</td></tr>
+                <tr><td colspan="8" style="border:none;">MST: 0313121108 - Hotline: 0907 101 899</td></tr>
+                <tr><td colspan="8" style="border:none;"></td></tr>
+                <tr><td colspan="8" style="border:none;" class="report-title">BÁO CÁO CHI TIẾT THU CHI</td></tr>
+
+                <tr><td colspan="8" style="border:none; text-align: center;">Ngày xuất: ${now}</td></tr>
+                <tr><td colspan="8" style="border:none;"></td></tr>
                 <thead>
                     <tr>
                         <th style="width: 100px;">Ngày</th>
@@ -163,22 +166,24 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
                         <th style="width: 80px;">ĐVT</th>
                         <th style="width: 60px;">SL</th>
                         <th style="width: 120px;">Đơn giá</th>
-                        <th style="width: 150px;">Thành tiền</th>
+                        <th style="width: 100px;">Thuế VAT</th>
+                        <th style="width: 150px;">Tổng tiền</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     ${rowsHtml}
-                    <tr><td colspan="7" style="border:none;"></td></tr>
+                    <tr><td colspan="8" style="border:none;"></td></tr>
                     <tr style="font-weight: bold; font-size: 14px;">
-                        <td colspan="6" style="text-align: right; border: 2px solid #000; background-color: #f8fafc;">TỔNG CỘNG THU TRONG KỲ:</td>
+                        <td colspan="7" style="text-align: right; border: 2px solid #000; background-color: #f8fafc;">TỔNG CỘNG THU TRONG KỲ:</td>
                         <td style="text-align: right; border: 2px solid #000; background-color: #f0fdf4; color: #166534;">${totalIncome}</td>
                     </tr>
                     <tr style="font-weight: bold; font-size: 14px;">
-                        <td colspan="6" style="text-align: right; border: 2px solid #000; background-color: #f8fafc;">TỔNG CỘNG CHI TRONG KỲ:</td>
+                        <td colspan="7" style="text-align: right; border: 2px solid #000; background-color: #f8fafc;">TỔNG CỘNG CHI TRONG KỲ:</td>
                         <td style="text-align: right; border: 2px solid #000; background-color: #fef2f2; color: #991b1b;">${totalExpense}</td>
                     </tr>
                     <tr style="font-weight: bold; font-size: 16px; background-color: #fef3c7;">
-                        <td colspan="6" style="text-align: right; border: 2px solid #000;">CÂN ĐỐI DƯ CUỐI KỲ:</td>
+                        <td colspan="7" style="text-align: right; border: 2px solid #000;">CÂN ĐỐI DƯ CUỐI KỲ:</td>
                         <td style="text-align: right; border: 2px solid #000; color: ${balance >= 0 ? '#166534' : '#991b1b'};">${balance}</td>
                     </tr>
                 </tbody>
@@ -435,14 +440,32 @@ export const printVoucher = (tx) => {
                     <div class="value">${tx.content}</div>
                 </div>
 
+                ${tx.vatPercentage > 0 ? `
+                <div style="margin-top: 15px;">
+                    <div class="content-row">
+                        <div class="label">Tiền hàng:</div>
+                        <div class="value">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tx.amount - tx.vatAmount)}</div>
+                    </div>
+                    <div class="content-row">
+                        <div class="label">Thuế suất VAT:</div>
+                        <div class="value">${tx.vatPercentage}%</div>
+                    </div>
+                    <div class="content-row">
+                        <div class="label">Tiền thuế VAT:</div>
+                        <div class="value">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tx.vatAmount)}</div>
+                    </div>
+                </div>
+                ` : ''}
+
                 <div class="amount-box">
-                    Số tiền: ${amountStr}
+                    Tổng cộng: ${amountStr}
                 </div>
 
                 <div class="content-row">
                     <div class="label">Bằng chữ:</div>
-                    <div class="value">${amountInWords}</div>
+                    <div class="value" style="font-style: italic;">${amountInWords}</div>
                 </div>
+
 
                 <div class="content-row">
                     <div class="label">Kèm theo:</div>

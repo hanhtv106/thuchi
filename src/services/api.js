@@ -88,7 +88,11 @@ const apiService = {
             unitPrice: item.unit_price,
             isSettled: item.is_settled,
             settledAt: item.settled_at,
-            createdBy: item.created_by
+            createdBy: item.created_by,
+            isDeleted: item.is_deleted,
+            deletedAt: item.deleted_at,
+            vatPercentage: item.vat_percentage,
+            vatAmount: item.vat_amount
         }));
     },
 
@@ -105,8 +109,11 @@ const apiService = {
             unit_price: tx.unitPrice,
             receiver: tx.receiver,
             attachments: tx.attachments,
-            created_by: tx.createdBy
+            created_by: tx.createdBy,
+            vat_percentage: tx.vatPercentage,
+            vat_amount: tx.vatAmount
         });
+
         if (error) throw error;
         return { message: 'Created' };
     },
@@ -126,8 +133,11 @@ const apiService = {
             receiver: tx.receiver,
             attachments: tx.attachments,
             is_settled: tx.isSettled,
-            settled_at: tx.settledAt
+            settled_at: tx.settledAt,
+            vat_percentage: tx.vatPercentage,
+            vat_amount: tx.vatAmount
         }).eq('id', id);
+
         if (error) throw error;
         return { message: 'Updated' };
     },

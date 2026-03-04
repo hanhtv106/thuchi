@@ -22,8 +22,11 @@ const TransactionForm = ({ onClose, initialData }) => {
         amount: 0,
         partnerId: '',
         receiver: '',
-        attachments: []
+        attachments: [],
+        vatPercentage: 0,
+        vatAmount: 0
     });
+
 
     useEffect(() => {
         if (initialData) {
@@ -38,9 +41,18 @@ const TransactionForm = ({ onClose, initialData }) => {
     }, [initialData, categories, formData.type]);
 
     useEffect(() => {
-        const amount = (parseFloat(formData.quantity) || 0) * (parseFloat(formData.unitPrice) || 0);
-        setFormData(prev => ({ ...prev, amount }));
-    }, [formData.quantity, formData.unitPrice]);
+        const subtotal = (parseFloat(formData.quantity) || 0) * (parseFloat(formData.unitPrice) || 0);
+        const vatPercentage = parseFloat(formData.vatPercentage) || 0;
+        const vatAmount = Math.round(subtotal * (vatPercentage / 100));
+        const totalAmount = subtotal + vatAmount;
+
+        setFormData(prev => ({
+            ...prev,
+            vatAmount: vatAmount,
+            amount: totalAmount
+        }));
+    }, [formData.quantity, formData.unitPrice, formData.vatPercentage]);
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -231,15 +243,38 @@ const TransactionForm = ({ onClose, initialData }) => {
                         </div>
                     </div>
 
-                    <div className="form-group">
-                        <label>Thành tiền (Tự động)</label>
-                        <input
-                            type="text"
-                            value={new Intl.NumberFormat('vi-VN').format(formData.amount)}
-                            readOnly
-                            className="readonly-amount"
-                        />
+                    <div className="form-row three-cols">
+                        <div className="form-group">
+                            <label>Thuế VAT (%)</label>
+                            <input
+                                type="number"
+                                name="vatPercentage"
+                                value={formData.vatPercentage}
+                                onChange={handleChange}
+                                min="0"
+                                max="100"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Tiền thuế VAT</label>
+                            <input
+                                type="text"
+                                value={new Intl.NumberFormat('vi-VN').format(formData.vatAmount)}
+                                readOnly
+                                className="readonly-amount"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Tổng thanh toán (Tự động)</label>
+                            <input
+                                type="text"
+                                value={new Intl.NumberFormat('vi-VN').format(formData.amount)}
+                                readOnly
+                                className="readonly-amount highlight-total"
+                            />
+                        </div>
                     </div>
+
 
                     <div className="form-row">
                         <div className="form-group">
