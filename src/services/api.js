@@ -90,9 +90,9 @@ const apiService = {
             settledAt: item.settled_at,
             createdBy: item.created_by,
             isDeleted: item.is_deleted,
-            deletedAt: item.deleted_at,
             vatPercentage: item.vat_percentage,
-            vatAmount: item.vat_amount
+            vatAmount: item.vat_amount,
+            voucherCode: item.voucher_code
         }));
     },
 
@@ -111,7 +111,8 @@ const apiService = {
             attachments: tx.attachments,
             created_by: tx.createdBy,
             vat_percentage: tx.vatPercentage,
-            vat_amount: tx.vatAmount
+            vat_amount: tx.vatAmount,
+            voucher_code: tx.voucherCode
         });
 
         if (error) throw error;
@@ -135,7 +136,8 @@ const apiService = {
             is_settled: tx.isSettled,
             settled_at: tx.settledAt,
             vat_percentage: tx.vatPercentage,
-            vat_amount: tx.vatAmount
+            vat_amount: tx.vatAmount,
+            voucher_code: tx.voucherCode
         }).eq('id', id);
 
         if (error) throw error;

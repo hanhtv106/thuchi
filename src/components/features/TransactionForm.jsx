@@ -24,7 +24,8 @@ const TransactionForm = ({ onClose, initialData }) => {
         receiver: '',
         attachments: [],
         vatPercentage: 0,
-        vatAmount: 0
+        vatAmount: 0,
+        voucherCode: ''
     });
 
 
@@ -196,6 +197,10 @@ const TransactionForm = ({ onClose, initialData }) => {
                         <div className="form-group">
                             <label>Ngày chứng từ (mm/dd/yyyy)</label>
                             <input type="date" name="date" value={formData.date} onChange={handleChange} required />
+                        </div>
+                        <div className="form-group">
+                            <label>Mã / Số chứng từ</label>
+                            <input type="text" name="voucherCode" value={formData.voucherCode} onChange={handleChange} placeholder="Tùy chọn" />
                         </div>
                     </div>
 

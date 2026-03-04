@@ -79,7 +79,14 @@ const TransactionList = ({ onEdit }) => {
                 <tbody>
                     {transactions.map(tx => (
                         <tr key={tx.id}>
-                            <td>{format(new Date(tx.date), 'dd/MM/yyyy')}</td>
+                            <td>
+                                <div>{format(new Date(tx.date), 'dd/MM/yyyy')}</div>
+                                {tx.voucherCode && (
+                                    <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '2px' }}>
+                                        #{tx.voucherCode}
+                                    </div>
+                                )}
+                            </td>
                             <td>
                                 <span className={`badge ${tx.type}`}>
                                     {tx.type === 'income' ? 'Thu' : 'Chi'}

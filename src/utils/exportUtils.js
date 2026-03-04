@@ -101,7 +101,7 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
                         <tr>
                             <td style="border: 1px solid #000; text-align: center;">${format(new Date(tx.date), 'dd/MM/yyyy')}</td>
                             <td style="border: 1px solid #000;">${partnerName}</td>
-                            <td style="border: 1px solid #000;">${tx.content}</td>
+                            <td style="border: 1px solid #000;">${tx.voucherCode ? `[${tx.voucherCode}] ` : ''}${tx.content}</td>
                             <td style="border: 1px solid #000; text-align: center;">${unit?.name || '-'}</td>
                             <td style="border: 1px solid #000; text-align: center;">${tx.quantity || 1}</td>
                             <td style="border: 1px solid #000; text-align: right;">${tx.unitPrice || 0}</td>
@@ -321,7 +321,7 @@ export const exportToPDF = (transactions, categories = [], units = [], partners 
                                 <tr>
                                     <td class="text-center">${format(new Date(tx.date), 'dd/MM/yyyy')}</td>
                                     <td>${partner?.name || tx.receiver || '-'}</td>
-                                    <td>${tx.content}</td>
+                                    <td>${tx.voucherCode ? `[${tx.voucherCode}] ` : ''}${tx.content}</td>
                                     <td class="text-center">${unit?.name || '-'}</td>
                                     <td class="text-center">${tx.quantity || 1}</td>
                                     <td class="text-right">${new Intl.NumberFormat('vi-VN').format(tx.unitPrice || 0)}</td>
@@ -416,7 +416,7 @@ export const printVoucher = (tx) => {
         <body>
             <div class="voucher">
                 <div class="meta">
-                    <div>Số: <strong>${tx.id.substring(0, 8).toUpperCase()}</strong></div>
+                    <div>Số: <strong>${tx.voucherCode || tx.id.substring(0, 8).toUpperCase()}</strong></div>
                     <div>Ngày: ${dateStr}</div>
                 </div>
                 
@@ -645,7 +645,7 @@ export const printProfessionalReport = (transactions, categories, partners, unit
         return `
                             <tr>
                                 <td class="text-center">${format(new Date(tx.date), 'dd/MM/yyyy')}</td>
-                                <td class="text-left">${tx.content}</td>
+                                <td class="text-left">${tx.voucherCode ? `[${tx.voucherCode}] ` : ''}${tx.content}</td>
                                 <td class="text-center">${tx.unitName}</td>
                                 <td class="text-center">${tx.quantity || 1}</td>
                                 <td class="text-right">${new Intl.NumberFormat('vi-VN').format(tx.unitPrice || 0)}</td>
