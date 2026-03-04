@@ -17,6 +17,7 @@ import { NotificationProvider } from './context/NotificationContext';
 import './index.css';
 
 function App() {
+    console.log('App: Rendering structure...');
     return (
         <BrowserRouter>
             <NotificationProvider>
@@ -25,40 +26,35 @@ function App() {
                         <Routes>
                             <Route path="/login" element={<LoginPage />} />
 
+                            {/* Các route yêu cầu đăng nhập */}
                             <Route element={<ProtectedRoute />}>
                                 <Route element={<MainLayout />}>
                                     <Route path="/" element={<Dashboard />} />
                                     <Route path="/transactions" element={<Transactions />} />
-
-                                    {/* Reports - accessible to admin & accountant mainly, but maybe employee too? 
-                      Requirement: "Kế toán: xuất báo cáo". Employee: "xem lịch sử cá nhân". 
-                      Let's allow all for now, component will handle internal logic if needed, 
-                      or protect route. */}
-                                    <Route path="/settlement" element={<SettlementPage />} />
                                     <Route path="/profile" element={<ProfilePage />} />
 
+                                    {/* Tất toán */}
+                                    <Route path="/settlement" element={<ProtectedRoute requiredPermission="SETTLEMENT_VIEW" />}>
+                                        <Route index element={<SettlementPage />} />
+                                    </Route>
 
-                                    <Route path="/reports" element={
-                                        <ProtectedRoute requiredPermission="REPORT_VIEW" />
-                                    }>
+                                    {/* Báo cáo */}
+                                    <Route path="/reports" element={<ProtectedRoute requiredPermission="REPORT_VIEW" />}>
                                         <Route index element={<Reports />} />
                                     </Route>
 
-                                    <Route path="/admin">
-                                        <Route index element={
-                                            <ProtectedRoute allowedRoles={['admin']} />
-                                        }>
-                                            <Route index element={<AdminPage />} />
-                                        </Route>
-                                        <Route path="master-data" element={<MasterDataPage />} />
-                                        <Route path="rbac" element={
-                                            <ProtectedRoute requiredPermission="SYSTEM_MANAGE" />
-                                        }>
-                                            <Route index element={<AdminRBAC />} />
-                                        </Route>
+                                    {/* Cấu trúc Admin phẳng hơn */}
+                                    <Route path="/admin/master-data" element={<ProtectedRoute requiredPermission="MASTER_DATA_VIEW" />}>
+                                        <Route index element={<MasterDataPage />} />
                                     </Route>
 
+                                    <Route path="/admin/rbac" element={<ProtectedRoute requiredPermission="SYSTEM_MANAGE" />}>
+                                        <Route index element={<AdminRBAC />} />
+                                    </Route>
 
+                                    <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']} />}>
+                                        <Route index element={<AdminPage />} />
+                                    </Route>
                                 </Route>
                             </Route>
 

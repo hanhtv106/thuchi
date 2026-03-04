@@ -10,9 +10,10 @@ const AdminPage = () => {
     const [activeTab, setActiveTab] = useState('trash');
 
     // Only Admin can access
-    if (user.role !== 'admin') {
+    if (user?.role !== 'admin') {
         return <div style={{ padding: '2rem' }}>Bạn không có quyền truy cập trang này.</div>;
     }
+
 
     const deletedTransactions = allTransactions.filter(t => t.isDeleted);
 

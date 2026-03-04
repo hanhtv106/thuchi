@@ -108,7 +108,8 @@ const TransactionList = ({ onEdit }) => {
                             </td>
                             <td className="actions-cell">
                                 {/* Hành động Sửa/Xóa */}
-                                {(user.role === 'admin' || tx.status !== 'approved') && (
+                                {(user?.role === 'admin' || tx.status !== 'approved') && (
+
                                     <>
                                         {hasPermission('TRANSACTION_UPDATE') && (
                                             <button onClick={() => onEdit(tx)} className="btn-icon text-blue" title="Sửa">
@@ -140,7 +141,9 @@ const TransactionList = ({ onEdit }) => {
                                 )}
 
                                 {/* Admin/Accountant Revert Decision */}
-                                {(user.role === 'admin' || hasPermission('TRANSACTION_APPROVE')) && (tx.status === 'approved' || tx.status === 'rejected') && (
+                                {(user?.role === 'admin' || hasPermission('TRANSACTION_APPROVE')) && (tx.status === 'approved' || tx.status === 'rejected') && (
+
+
 
                                     <button
                                         onClick={async () => {
