@@ -110,9 +110,9 @@ const AdminRBAC = () => {
         setFormData({ ...role });
 
         // Lấy permissions đã gán cho role này
-        const assigned = await apiService.getPermissionsByRole(role.id);
-        const assignedIds = assigned.map(a => a.permissionId);
+        const assignedIds = await apiService.getPermissionsByRole(role.id);
         setRolePermissions(assignedIds);
+
 
         setIsEditing(true);
     };

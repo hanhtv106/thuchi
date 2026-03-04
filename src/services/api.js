@@ -341,13 +341,18 @@ const apiService = {
     },
     async updateRolePermissions(roleId, pIds) {
         // Delete existing
-        await supabase.from('role_permissions').delete().eq('role_id', roleId);
-        // Insert new
-        const rows = pIds.map(pid => ({ role_id: roleId, permission_id: pid }));
-        const { error } = await supabase.from('role_permissions').insert(rows);
-        if (error) throw error;
+        const { error: delError } = await supabase.from('role_permissions').delete().eq('role_id', roleId);
+        if (delError) throw delError;
+
+        // Insert new only if there are items
+        if (pIds && pIds.length > 0) {
+            const rows = pIds.map(pid => ({ role_id: roleId, permission_id: pid }));
+            const { error } = await supabase.from('role_permissions').insert(rows);
+            if (error) throw error;
+        }
         return { message: 'Updated' };
     }
+
 };
 
 export default apiService;
