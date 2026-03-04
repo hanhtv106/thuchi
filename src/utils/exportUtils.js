@@ -324,19 +324,19 @@ export const exportToPDF = (transactions, categories = [], units = [], partners 
                                     <td>${tx.voucherCode ? `[${tx.voucherCode}] ` : ''}${tx.content}</td>
                                     <td class="text-center">${unit?.name || '-'}</td>
                                     <td class="text-center">${tx.quantity || 1}</td>
-                                    <td class="text-right">${new Intl.NumberFormat('vi-VN').format(tx.unitPrice || 0)}</td>
-                                    <td class="text-right amount-cell">${new Intl.NumberFormat('vi-VN').format(tx.amount)}</td>
+                                    <td class="text-right">${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(tx.unitPrice || 0)}</td>
+                                    <td class="text-right amount-cell">${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(tx.amount)}</td>
                                 </tr>
                                 `;
     }).join('')}
                             <tr class="total-row">
                                 <td colspan="6" class="text-right">Cộng hạng mục (${cat.name}):</td>
-                                <td class="text-right amount-cell">${new Intl.NumberFormat('vi-VN').format(cat.total)}</td>
+                                <td class="text-right amount-cell">${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(cat.total)}</td>
                             </tr>
                         `).join('')}
                         <tr class="total-row" style="background-color: #d1d5db;">
                             <td colspan="6" class="text-right" style="text-transform: uppercase;">TỔNG ${typeGroup.label}:</td>
-                            <td class="text-right amount-cell" style="font-size: 13px;">${new Intl.NumberFormat('vi-VN').format(typeGroup.total)}</td>
+                            <td class="text-right amount-cell" style="font-size: 13px;">${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(typeGroup.total)}</td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -345,15 +345,15 @@ export const exportToPDF = (transactions, categories = [], units = [], partners 
             <div class="summary-box">
                 <div class="summary-row">
                     <span>Tổng cộng Thu trong kỳ:</span>
-                    <span class="font-bold">${new Intl.NumberFormat('vi-VN').format(totalIncome)}</span>
+                    <span class="font-bold">${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(totalIncome)}</span>
                 </div>
                 <div class="summary-row">
                     <span>Tổng cộng Chi trong kỳ:</span>
-                    <span class="font-bold">${new Intl.NumberFormat('vi-VN').format(totalExpense)}</span>
+                    <span class="font-bold">${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(totalExpense)}</span>
                 </div>
                 <div class="summary-row" style="border-top: 2px solid #333; padding-top: 5px; margin-top: 5px;">
                     <span class="font-bold">CÂN ĐỐI DƯ CUỐI KỲ:</span>
-                    <span class="font-bold" style="font-size: 16px;">${new Intl.NumberFormat('vi-VN').format(balance)}</span>
+                    <span class="font-bold" style="font-size: 16px;">${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(balance)}</span>
                 </div>
             </div>
 
@@ -382,7 +382,7 @@ export const printVoucher = (tx) => {
     const isIncome = tx.type === 'income';
     const title = isIncome ? 'PHIẾU THU' : 'PHIẾU CHI';
     const dateStr = format(new Date(tx.date), 'dd/MM/yyyy');
-    const amountStr = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tx.amount);
+    const amountStr = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 10 }).format(tx.amount);
     const amountInWords = numberToVietnameseWords(tx.amount);
 
     const printWindow = window.open('', '_blank');
@@ -444,7 +444,7 @@ export const printVoucher = (tx) => {
                 <div style="margin-top: 15px;">
                     <div class="content-row">
                         <div class="label">Tiền hàng:</div>
-                        <div class="value">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tx.amount - tx.vatAmount)}</div>
+                        <div class="value">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 10 }).format(tx.amount - tx.vatAmount)}</div>
                     </div>
                     <div class="content-row">
                         <div class="label">Thuế suất VAT:</div>
@@ -452,7 +452,7 @@ export const printVoucher = (tx) => {
                     </div>
                     <div class="content-row">
                         <div class="label">Tiền thuế VAT:</div>
-                        <div class="value">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tx.vatAmount)}</div>
+                        <div class="value">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 10 }).format(tx.vatAmount)}</div>
                     </div>
                 </div>
                 ` : ''}
@@ -648,8 +648,8 @@ export const printProfessionalReport = (transactions, categories, partners, unit
                                 <td class="text-left">${tx.voucherCode ? `[${tx.voucherCode}] ` : ''}${tx.content}</td>
                                 <td class="text-center">${tx.unitName}</td>
                                 <td class="text-center">${tx.quantity || 1}</td>
-                                <td class="text-right">${new Intl.NumberFormat('vi-VN').format(tx.unitPrice || 0)}</td>
-                                <td class="text-right">${new Intl.NumberFormat('vi-VN').format(tx.amount)}</td>
+                                <td class="text-right">${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(tx.unitPrice || 0)}</td>
+                                <td class="text-right">${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(tx.amount)}</td>
                                 <td class="text-left">${tx.partnerName}</td>
                                 <td class="text-center">
                                     ${tx.attachments?.length > 0
@@ -665,7 +665,7 @@ export const printProfessionalReport = (transactions, categories, partners, unit
     }).join('')}
                         <tr class="total-row">
                             <td colspan="5" class="text-right">TỔNG NHÓM (${cat.name})</td>
-                            <td class="text-right">${new Intl.NumberFormat('vi-VN').format(cat.items.reduce((s, i) => s + i.amount, 0))}</td>
+                            <td class="text-right">${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(cat.items.reduce((s, i) => s + i.amount, 0))}</td>
                             <td colspan="2"></td>
                         </tr>
                     `).join('')}
@@ -673,17 +673,17 @@ export const printProfessionalReport = (transactions, categories, partners, unit
                     <!-- Unified Summary Rows -->
                     <tr class="total-row" style="border-top: 2px solid #000;">
                         <td colspan="5" class="text-right" style="padding: 10px; font-size: 14px;">TỔNG SỐ TIỀN ĐÃ CHI</td>
-                        <td class="text-right" style="padding: 10px; font-size: 14px;">${new Intl.NumberFormat('vi-VN').format(totalSpent)}</td>
+                        <td class="text-right" style="padding: 10px; font-size: 14px;">${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(totalSpent)}</td>
                         <td colspan="2"></td>
                     </tr>
                     <tr class="total-row">
                         <td colspan="5" class="text-right" style="padding: 10px; font-size: 14px;">SỐ TIỀN THU</td>
-                        <td class="text-right" style="padding: 10px; font-size: 14px;">${new Intl.NumberFormat('vi-VN').format(advanceAmount)}</td>
+                        <td class="text-right" style="padding: 10px; font-size: 14px;">${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(advanceAmount)}</td>
                         <td colspan="2"></td>
                     </tr>
                     <tr class="total-row">
                         <td colspan="5" class="text-right" style="padding: 10px; font-size: 14px;">${balanceLabel}</td>
-                        <td class="text-right" style="padding: 10px; font-size: 14px;">${new Intl.NumberFormat('vi-VN').format(displayBalance)}</td>
+                        <td class="text-right" style="padding: 10px; font-size: 14px;">${new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(displayBalance)}</td>
                         <td colspan="2"></td>
                     </tr>
                 </tbody>

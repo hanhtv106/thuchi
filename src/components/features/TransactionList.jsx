@@ -23,7 +23,7 @@ const TransactionList = ({ onEdit }) => {
     const getPartnerName = (id) => partners.find(p => p.id === id)?.name || 'N/A';
 
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 10 }).format(amount);
     };
 
     const handleDelete = async (id) => {
