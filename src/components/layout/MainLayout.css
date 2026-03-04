@@ -97,7 +97,17 @@
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 1rem;
+    text-decoration: none;
+    color: inherit;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: background-color 0.2s;
 }
+
+.user-info:hover {
+    background-color: #f3f4f6;
+}
+
 
 .avatar {
     width: 32px;

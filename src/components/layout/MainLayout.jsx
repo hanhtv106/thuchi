@@ -54,14 +54,17 @@ export const MainLayout = () => {
 
                 <div className="sidebar-footer">
                     {isSidebarOpen && (
-                        <div className="user-info">
-                            <div className="avatar"><User size={16} /></div>
-                            <div className="user-details">
-                                <p className="user-name">{user?.fullName}</p>
-                                <p className="user-role">{user?.role}</p>
-                            </div>
+                        <div className="user-info-wrapper">
+                            <Link to="/profile" className="user-info" onClick={() => window.innerWidth < 768 && setIsSidebarOpen(false)}>
+                                <div className="avatar"><User size={16} /></div>
+                                <div className="user-details">
+                                    <p className="user-name">{user?.fullName}</p>
+                                    <p className="user-role">{user?.role}</p>
+                                </div>
+                            </Link>
                         </div>
                     )}
+
                     <button onClick={logout} className="logout-btn" title="Đăng xuất">
                         <LogOut size={20} />
                         {isSidebarOpen && <span>Đăng xuất</span>}

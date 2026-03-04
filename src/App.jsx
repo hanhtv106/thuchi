@@ -11,7 +11,9 @@ import AdminPage from './pages/AdminPage';
 import MasterDataPage from './pages/MasterDataPage';
 import SettlementPage from './pages/SettlementPage';
 import AdminRBAC from './pages/AdminRBAC';
+import ProfilePage from './pages/ProfilePage';
 import { NotificationProvider } from './context/NotificationContext';
+
 import './index.css';
 
 function App() {
@@ -33,6 +35,8 @@ function App() {
                       Let's allow all for now, component will handle internal logic if needed, 
                       or protect route. */}
                                     <Route path="/settlement" element={<SettlementPage />} />
+                                    <Route path="/profile" element={<ProfilePage />} />
+
 
                                     <Route path="/reports" element={
                                         <ProtectedRoute requiredPermission="REPORT_VIEW" />

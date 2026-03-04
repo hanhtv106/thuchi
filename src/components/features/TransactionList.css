@@ -138,3 +138,33 @@
   padding: 2px;
   border-radius: 4px;
 }
+
+/* Responsive Table for Mobile */
+@media (max-width: 768px) {
+
+  .data-table th:nth-child(2),
+  /* Loại */
+  .data-table td:nth-child(2),
+  .data-table th:nth-child(3),
+  /* Hạng mục */
+  .data-table td:nth-child(3),
+  .data-table th:nth-child(6),
+  /* Trạng thái */
+  .data-table td:nth-child(6) {
+    display: none;
+  }
+
+  .data-table {
+    font-size: 0.8rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .tx-content {
+    max-width: 120px;
+    font-size: 0.75rem;
+  }
+}
