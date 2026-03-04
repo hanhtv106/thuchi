@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Edit, Trash2, Plus, Save, X } from 'lucide-react';
 import './DataManagementTable.css';
 
-const DataManagementTable = ({ title, data, onAdd, onUpdate, onDelete, columns = [{ key: 'name', label: 'Tên' }] }) => {
+const DataManagementTable = ({ title, data, onAdd, onUpdate, onDelete, columns = [{ key: 'name', label: 'Tên' }], readOnly = false }) => {
+
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({});
@@ -67,11 +68,12 @@ const DataManagementTable = ({ title, data, onAdd, onUpdate, onDelete, columns =
         <div className="data-mgmt-card">
             <div className="data-mgmt-header">
                 <h3 className="data-mgmt-title">{title}</h3>
-                {!isAdding && !editingId && (
+                {!isAdding && !editingId && !readOnly && (
                     <button onClick={handleStartAdd} className="btn btn-primary">
                         <Plus size={16} /> Thêm mới
                     </button>
                 )}
+
             </div>
 
             <div className="table-container">
@@ -81,7 +83,8 @@ const DataManagementTable = ({ title, data, onAdd, onUpdate, onDelete, columns =
                             {columns.map(col => (
                                 <th key={col.key}>{col.label}</th>
                             ))}
-                            <th style={{ width: '100px' }}>Hành động</th>
+                            {!readOnly && <th style={{ width: '100px' }}>Hành động</th>}
+
                         </tr>
                     </thead>
                     <tbody>
@@ -172,10 +175,12 @@ const DataManagementTable = ({ title, data, onAdd, onUpdate, onDelete, columns =
                                             </td>
                                         ))}
                                         <td>
-                                            <div className="action-buttons">
-                                                <button onClick={() => handleStartEdit(item)} className="btn-icon-action btn-edit" title="Sửa"><Edit size={18} /></button>
-                                                <button onClick={() => handleDelete(item.id)} className="btn-icon-action btn-delete" title="Xóa"><Trash2 size={18} /></button>
-                                            </div>
+                                            {!readOnly && (
+                                                <div className="action-buttons">
+                                                    <button onClick={() => handleStartEdit(item)} className="btn-icon text-blue" title="Sửa"><Edit size={16} /></button>
+                                                    <button onClick={() => handleDelete(item.id)} className="btn-icon text-red" title="Xóa"><Trash2 size={16} /></button>
+                                                </div>
+                                            )}
                                         </td>
                                     </>
                                 )}

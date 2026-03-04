@@ -124,7 +124,8 @@ const SettlementPage = () => {
                             <th>Nội dung</th>
                             <th>Số tiền</th>
                             <th>Trạng thái</th>
-                            <th>Hành động</th>
+                            {hasPermission('SETTLEMENT_MANAGE') && <th>Hành động</th>}
+
                         </tr>
                     </thead>
                     <tbody>
@@ -147,25 +148,28 @@ const SettlementPage = () => {
                                         {tx.status === 'pending' ? 'Chờ duyệt' : 'Đã duyệt'}
                                     </span>
                                 </td>
-                                <td>
-                                    {settlementStatus === 'unsettled' ? (
-                                        <button
-                                            onClick={() => handleSettle(tx.id)}
-                                            className="btn btn-primary btn-sm"
-                                            title="Đánh dấu đã tất toán"
-                                        >
-                                            <CheckCircle size={16} /> Tất toán
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() => handleUnsettle(tx.id)}
-                                            className="btn btn-secondary btn-sm text-red"
-                                            title="Hủy tất toán"
-                                        >
-                                            <RotateCcw size={16} style={{ marginRight: '4px' }} /> Hủy tất toán
-                                        </button>
-                                    )}
-                                </td>
+                                {hasPermission('SETTLEMENT_MANAGE') && (
+                                    <td>
+                                        {settlementStatus === 'unsettled' ? (
+                                            <button
+                                                onClick={() => handleSettle(tx.id)}
+                                                className="btn btn-primary btn-sm"
+                                                title="Đánh dấu đã tất toán"
+                                            >
+                                                <CheckCircle size={16} /> Tất toán
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleUnsettle(tx.id)}
+                                                className="btn btn-secondary btn-sm text-red"
+                                                title="Hủy tất toán"
+                                            >
+                                                <RotateCcw size={16} style={{ marginRight: '4px' }} /> Hủy tất toán
+                                            </button>
+                                        )}
+                                    </td>
+                                )}
+
                             </tr>
                         ))}
                         {filteredTransactions.length === 0 && (

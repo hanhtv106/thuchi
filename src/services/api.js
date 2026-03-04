@@ -44,7 +44,11 @@ const apiService = {
 
         if (permsError) throw permsError;
 
-        const permissionCodes = perms.map(p => p.permissions.code);
+        // Map safe - handle cases where permissions object might be null or array
+        const permissionCodes = perms
+            .map(p => p.permissions?.code || (Array.isArray(p.permissions) ? p.permissions[0]?.code : null))
+            .filter(Boolean);
+
 
         return {
             token: authData.session.access_token,

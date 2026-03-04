@@ -37,6 +37,8 @@ const MasterDataPage = () => {
                         onAdd={addCategory}
                         onUpdate={updateCategory}
                         onDelete={deleteCategory}
+                        readOnly={!hasPermission('MASTER_DATA_MANAGE')}
+
                         columns={[
                             { key: 'name', label: 'Tên hạng mục' },
                             {
@@ -59,6 +61,8 @@ const MasterDataPage = () => {
                         onAdd={addUnit}
                         onUpdate={updateUnit}
                         onDelete={deleteUnit}
+                        readOnly={!hasPermission('MASTER_DATA_MANAGE')}
+
                         columns={[
                             { key: 'name', label: 'Tên đơn vị' }
                         ]}
@@ -72,6 +76,8 @@ const MasterDataPage = () => {
                         onAdd={addPartner}
                         onUpdate={updatePartner}
                         onDelete={deletePartner}
+                        readOnly={!hasPermission('MASTER_DATA_MANAGE')}
+
                         columns={[
                             { key: 'name', label: 'Tên đối tác' },
                             {

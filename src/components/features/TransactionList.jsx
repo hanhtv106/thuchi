@@ -140,7 +140,8 @@ const TransactionList = ({ onEdit }) => {
                                 )}
 
                                 {/* Admin/Accountant Revert Decision */}
-                                {(user.role === 'admin' || user.role === 'accountant') && (tx.status === 'approved' || tx.status === 'rejected') && (
+                                {(user.role === 'admin' || hasPermission('TRANSACTION_APPROVE')) && (tx.status === 'approved' || tx.status === 'rejected') && (
+
                                     <button
                                         onClick={async () => {
                                             const actionText = tx.status === 'approved' ? 'hủy duyệt' : 'hủy từ chối';
