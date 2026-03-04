@@ -242,7 +242,7 @@ const TransactionForm = ({ onClose, initialData }) => {
                     <div className="form-row">
                         <div className="form-group">
                             <label>Số lượng</label>
-                            <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} min="0" step="any" />
+                            <input type="text" name="quantity" value={formatDisplayNumber(formData.quantity)} onChange={handleNumberFormatChange} />
                         </div>
 
                         <div className="form-group">
