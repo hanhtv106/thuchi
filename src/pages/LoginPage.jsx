@@ -41,7 +41,7 @@ const LoginPage = () => {
 
                 <form onSubmit={handleSubmit} className="login-form">
                     <div className="form-group">
-                        <label htmlFor="email">Tên đăng nhập</label>
+                        <label htmlFor="email">Tên đăng nhập hoặc Email</label>
                         <input
                             type="text"
                             id="email"

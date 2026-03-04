@@ -36,11 +36,25 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('thuchi_user', JSON.stringify(sessionUser));
             return sessionUser;
         } catch (error) {
-            const message = error.message || 'Lỗi đăng nhập hệ thống';
+            let message = error.message;
+
+            // Dịch lỗi Supabase sang Tiếng Việt
+            if (message === 'Invalid login credentials') {
+                message = 'Email/Tên đăng nhập hoặc mật khẩu không chính xác';
+            } else if (message === 'Email not confirmed') {
+                message = 'Email chưa được xác thực. Vui lòng kiểm tra hộp thư';
+            } else if (message === 'Username không tồn tại') {
+                message = 'Tên đăng nhập không tồn tại trên hệ thống';
+            } else if (message.includes('rate limit')) {
+                message = 'Quá nhiều yêu cầu đăng nhập. Vui lòng thử lại sau vài phút';
+            } else {
+                message = 'Lỗi hệ thống: ' + message;
+            }
+
             throw new Error(message);
         }
-
     };
+
 
     const logout = () => {
         setUser(null);

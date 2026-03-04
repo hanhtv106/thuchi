@@ -2,7 +2,23 @@ import { supabase } from './supabaseClient';
 
 const apiService = {
     // Auth
-    async login(email, password) {
+    async login(identifier, password) {
+        let email = identifier;
+
+        // Nếu không phải email (không có @), tìm email từ username trong bảng profiles
+        if (!identifier.includes('@')) {
+            const { data: profile, error: findError } = await supabase
+                .from('profiles')
+                .select('email')
+                .eq('username', identifier)
+                .single();
+
+            if (findError || !profile) {
+                throw new Error('Username không tồn tại');
+            }
+            email = profile.email;
+        }
+
         // 1. Sign in with Supabase
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
             email,
@@ -35,12 +51,14 @@ const apiService = {
             user: {
                 uid: authData.user.id,
                 email: authData.user.email,
+                username: profile.username,
                 fullName: profile.full_name,
                 role: profile.role,
                 permissions: permissionCodes
             }
         };
     },
+
 
     async logout() {
         await supabase.auth.signOut();
