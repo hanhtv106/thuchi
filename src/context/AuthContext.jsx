@@ -36,9 +36,10 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('thuchi_user', JSON.stringify(sessionUser));
             return sessionUser;
         } catch (error) {
-            const message = error.response?.data?.message || 'Lỗi đăng nhập hệ thống';
+            const message = error.message || 'Lỗi đăng nhập hệ thống';
             throw new Error(message);
         }
+
     };
 
     const logout = () => {
