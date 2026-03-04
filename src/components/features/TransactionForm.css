@@ -210,6 +210,9 @@
     border: 1px solid #d1d5db;
     border-radius: 0.375rem;
     height: 38px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: inherit;
 }
 
 .form-group textarea {
@@ -221,14 +224,17 @@
     border: 1px solid #d1d5db;
     border-radius: 0.375rem;
     overflow: hidden;
+    height: 38px;
+    box-sizing: border-box;
 }
 
 .type-toggle button {
     flex: 1;
-    padding: 0.5rem;
+    padding: 0;
     border: none;
     cursor: pointer;
     background: white;
+    height: 100%;
 }
 
 .type-toggle button.active {

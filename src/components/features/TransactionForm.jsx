@@ -239,13 +239,12 @@ const TransactionForm = ({ onClose, initialData }) => {
                         <div className="form-group">
                             <label>Đơn giá</label>
                             <input
-                                type="text"
+                                type="number"
                                 name="unitPrice"
-                                value={new Intl.NumberFormat('vi-VN').format(formData.unitPrice)}
-                                onChange={(e) => {
-                                    const val = e.target.value.replace(/\D/g, '');
-                                    setFormData(prev => ({ ...prev, unitPrice: val ? parseInt(val, 10) : 0 }));
-                                }}
+                                value={formData.unitPrice || ''}
+                                onChange={handleChange}
+                                min="0"
+                                step="any"
                             />
                         </div>
                     </div>
