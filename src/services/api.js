@@ -224,6 +224,62 @@ const apiService = {
             role: u.role
         }));
     },
+
+    async addUser(userData) {
+        // Lưu ý: Để tạo user trong Auth cần Edge Function hoặc Service Role Key.
+        // Ở đây chúng ta thử dùng signUp, nhưng nó có thể yêu cầu xác thực email.
+        const { data, error: authError } = await supabase.auth.signUp({
+            email: userData.email,
+            password: userData.password,
+            options: {
+                data: {
+                    full_name: userData.fullName,
+                    username: userData.username,
+                }
+            }
+        });
+
+        if (authError) throw authError;
+
+        // Cập nhật profile nếu trigger chưa làm hoặc cần update role ngay
+        if (data.user) {
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .update({
+                    full_name: userData.fullName,
+                    role: userData.role,
+                    username: userData.username
+                })
+                .eq('id', data.user.id);
+            if (profileError) console.error('Error updating profile:', profileError);
+        }
+
+        return data;
+    },
+
+    async updateUser(id, userData) {
+        const { error } = await supabase
+            .from('profiles')
+            .update({
+                full_name: userData.fullName,
+                role: userData.role,
+                username: userData.username
+            })
+            .eq('id', id);
+        if (error) throw error;
+        return { message: 'Updated' };
+    },
+
+    async deleteUser(id) {
+        // Xoá profile (Xoá Auth cần Admin API)
+        const { error } = await supabase
+            .from('profiles')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+        return { message: 'Deleted' };
+    },
+
     // Note: AddUser/DeleteUser for Supabase Auth requires Admin API or custom Edge Function.
     // For now, we'll assume users sign up themselves or admin uses Supabase Dashboard.
 
@@ -233,6 +289,25 @@ const apiService = {
         if (error) throw error;
         return data;
     },
+
+    async addRole(roleData) {
+        const { error } = await supabase.from('roles').insert(roleData);
+        if (error) throw error;
+        return { message: 'Created' };
+    },
+
+    async updateRole(id, roleData) {
+        const { error } = await supabase.from('roles').update(roleData).eq('id', id);
+        if (error) throw error;
+        return { message: 'Updated' };
+    },
+
+    async deleteRole(id) {
+        const { error } = await supabase.from('roles').delete().eq('id', id);
+        if (error) throw error;
+        return { message: 'Deleted' };
+    },
+
     async getAllPermissions() {
         const { data, error } = await supabase.from('permissions').select('*');
         if (error) throw error;
