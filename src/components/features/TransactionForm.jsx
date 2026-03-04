@@ -371,11 +371,13 @@ const TransactionForm = ({ onClose, initialData }) => {
                             </label>
                             <div className="attachment-list">
                                 {formData.attachments?.map((file, index) => (
-                                    <div key={index} className="attachment-item">
-                                        {file.type?.startsWith('image/') && file.data && (
-                                            <img src={file.data} alt="preview" className="file-preview-mini" />
-                                        )}
-                                        <span className="file-name">{file.name}</span>
+                                    <div key={index} className="attachment-item" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <a href={file.data} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit', flex: 1 }}>
+                                            {file.type?.startsWith('image/') && file.data && (
+                                                <img src={file.data} alt="preview" className="file-preview-mini" />
+                                            )}
+                                            <span className="file-name" style={{ color: '#2563eb', textDecoration: 'underline' }}>{file.name}</span>
+                                        </a>
                                         <button type="button" onClick={() => removeAttachment(index)} className="remove-file"><X size={14} /></button>
                                     </div>
                                 ))}
