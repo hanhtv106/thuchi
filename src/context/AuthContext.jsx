@@ -10,12 +10,12 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const savedUser = localStorage.getItem('thuchi_user');
+        const savedUser = sessionStorage.getItem('thuchi_user');
         if (savedUser) {
             try {
                 setUser(JSON.parse(savedUser));
             } catch {
-                localStorage.removeItem('thuchi_user');
+                sessionStorage.removeItem('thuchi_user');
             }
         }
         setLoading(false);
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
             };
 
             setUser(sessionUser);
-            localStorage.setItem('thuchi_user', JSON.stringify(sessionUser));
+            sessionStorage.setItem('thuchi_user', JSON.stringify(sessionUser));
             return sessionUser;
         } catch (error) {
             let message = error.message;
@@ -58,8 +58,35 @@ export const AuthProvider = ({ children }) => {
 
     const logout = () => {
         setUser(null);
-        localStorage.removeItem('thuchi_user');
+        sessionStorage.removeItem('thuchi_user');
     };
+
+    useEffect(() => {
+        let timeout;
+
+        const resetTimer = () => {
+            clearTimeout(timeout);
+            if (user) {
+                // 15 phút = 15 * 60 * 1000 = 900000 milliseconds
+                timeout = setTimeout(() => {
+                    logout();
+                    alert("Phiên đăng nhập đã hết hạn do không hoạt động trong 15 phút. Vui lòng đăng nhập lại.");
+                }, 900000);
+            }
+        };
+
+        const events = ['mousemove', 'keydown', 'scroll', 'click'];
+
+        if (user) {
+            events.forEach(e => window.addEventListener(e, resetTimer));
+            resetTimer();
+        }
+
+        return () => {
+            clearTimeout(timeout);
+            events.forEach(e => window.removeEventListener(e, resetTimer));
+        };
+    }, [user]);
 
     const hasPermission = (permissionCode) => {
         if (!user) return false;
