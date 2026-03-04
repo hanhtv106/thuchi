@@ -235,14 +235,16 @@ const AdminRBAC = () => {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Email (Tùy chọn)</label>
+                                    <label>Email (Bắt buộc)</label>
                                     <input
                                         type="email"
                                         value={formData.email || ''}
                                         onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                        required
                                         placeholder="user@gmail.com"
                                     />
                                 </div>
+
                                 <div className="form-group">
                                     <label>Mật khẩu</label>
                                     <input
