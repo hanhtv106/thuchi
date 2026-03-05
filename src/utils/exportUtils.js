@@ -253,9 +253,12 @@ export const exportToPDF = (transactions, categories = [], units = [], partners 
                     @page { margin: 10mm; size: A4 landscape; } 
                 }
                 body { font-family: "Times New Roman", Times, serif; color: #333; line-height: 1.4; padding: 20px; }
-                .header { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-                .company-info h2 { margin: 0; font-size: 18px; color: #000; }
-                .company-info p { margin: 2px 0; font-size: 12px; }
+                .header { display: flex; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                .logo-container { margin-right: 20px; }
+                .logo-container img { height: 100px; width: auto; display: block; mix-blend-mode: multiply; }
+                .company-info { text-align: left; flex-grow: 1; border-left: 1px solid #ccc; padding-left: 20px; }
+                .company-info h2 { margin: 0; font-size: 18px; color: #1a365d; }
+                .company-info p { margin: 2px 0; font-size: 12px; font-weight: bold; }
                 .report-title { text-align: center; margin: 15px 0; }
                 .report-title h1 { margin: 0; font-size: 22px; text-transform: uppercase; }
                 
@@ -281,6 +284,9 @@ export const exportToPDF = (transactions, categories = [], units = [], partners 
         </head>
         <body>
             <div class="header">
+                <div class="logo-container">
+                    <img src="/logo.png" alt="Logo" onerror="this.style.display='none'">
+                </div>
                 <div className="company-info">
                     <h2>CÔNG TY CỔ PHẦN THIẾT BỊ NÂNG HOÀNG GIA</h2>
                     <p>Địa chỉ: SỐ 19, ĐS 12, KNO HIỆP BÌNH PHƯỚC, KP2, HIỆP BÌNH, TPHCM</p>
@@ -554,7 +560,7 @@ export const printProfessionalReport = (transactions, categories, partners, unit
                 body { font-family: "Times New Roman", Times, serif; color: #000; padding: 10px; font-size: 13px; line-height: 1.4; }
                 .report-header { display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #000; }
                 .logo-container { margin-right: 20px; }
-                .logo-container img { height: 75px; width: auto; display: block; }
+                .logo-container img { height: 120px; width: auto; display: block; mix-blend-mode: multiply; }
 
                 .company-info { text-align: left; flex-grow: 1; border-left: 1px solid #ccc; padding-left: 20px; }
                 .company-info h2 { margin: 0; font-size: 19px; text-transform: uppercase; color: #1a365d; font-family: "Arial", sans-serif; }
