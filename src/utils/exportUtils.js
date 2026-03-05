@@ -255,7 +255,7 @@ export const exportToPDF = (transactions, categories = [], units = [], partners 
                 body { font-family: "Times New Roman", Times, serif; color: #333; line-height: 1.4; padding: 20px; }
                 .header { display: flex; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
                 .logo-container { margin-right: 20px; }
-                .logo-container img { height: 100px; width: auto; display: block; mix-blend-mode: multiply; }
+                .logo-container img { height: 150px; width: auto; display: block; mix-blend-mode: multiply; }
                 .company-info { text-align: left; flex-grow: 1; border-left: 1px solid #ccc; padding-left: 20px; }
                 .company-info h2 { margin: 0; font-size: 18px; color: #1a365d; }
                 .company-info p { margin: 2px 0; font-size: 12px; font-weight: bold; }
@@ -560,7 +560,7 @@ export const printProfessionalReport = (transactions, categories, partners, unit
                 body { font-family: "Times New Roman", Times, serif; color: #000; padding: 10px; font-size: 13px; line-height: 1.4; }
                 .report-header { display: flex; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #000; }
                 .logo-container { margin-right: 20px; }
-                .logo-container img { height: 120px; width: auto; display: block; mix-blend-mode: multiply; }
+                .logo-container img { height: 150px; width: auto; display: block; mix-blend-mode: multiply; }
 
                 .company-info { text-align: left; flex-grow: 1; border-left: 1px solid #ccc; padding-left: 20px; }
                 .company-info h2 { margin: 0; font-size: 19px; text-transform: uppercase; color: #1a365d; font-family: "Arial", sans-serif; }
