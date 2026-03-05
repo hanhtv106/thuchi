@@ -24,9 +24,9 @@
 }
 
 .login-logo {
-    width: 280px;
+    width: 400px;
     height: auto;
-    max-height: 200px;
+    max-height: 320px;
     margin-bottom: 0.5rem;
     object-fit: contain;
     mix-blend-mode: multiply;
