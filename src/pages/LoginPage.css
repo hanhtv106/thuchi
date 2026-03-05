@@ -24,10 +24,13 @@
 }
 
 .login-logo {
-    width: 64px;
-    height: 64px;
-    margin-bottom: 1rem;
+    width: 280px;
+    height: auto;
+    max-height: 200px;
+    margin-bottom: 0.5rem;
     object-fit: contain;
+    mix-blend-mode: multiply;
+    /* Blends light grey/white background with parent */
 }
 
 .login-title {
