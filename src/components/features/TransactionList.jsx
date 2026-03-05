@@ -69,6 +69,7 @@ const TransactionList = ({ onEdit }) => {
                     <tr>
                         <th>Ngày</th>
                         <th>Loại</th>
+                        <th>Số hoá đơn</th>
                         <th>Hạng mục</th>
                         <th>Nội dung</th>
                         <th>Thành tiền (trước VAT)</th>
@@ -82,12 +83,8 @@ const TransactionList = ({ onEdit }) => {
                         <tr key={tx.id}>
                             <td>
                                 <div>{format(new Date(tx.date), 'dd/MM/yyyy')}</div>
-                                {tx.voucherCode && (
-                                    <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '2px' }}>
-                                        #{tx.voucherCode}
-                                    </div>
-                                )}
                             </td>
+                            <td style={{ fontWeight: '500' }}>{tx.voucherCode || '-'}</td>
                             <td>
                                 <span className={`badge ${tx.type}`}>
                                     {tx.type === 'income' ? 'Thu' : 'Chi'}
@@ -103,7 +100,7 @@ const TransactionList = ({ onEdit }) => {
                                         </span>
                                     )}
                                 </div>
-                                <small>{getPartnerName(tx.partnerId)}</small>
+                                <small style={{ color: '#6b7280' }}>Dối tác: {getPartnerName(tx.partnerId)}</small>
                             </td>
                             <td className={`amount ${tx.type}`}>
                                 <div>{tx.type === 'income' ? '+' : '-'}{formatCurrency((tx.quantity * tx.unitPrice) || 0)}</div>
@@ -186,7 +183,7 @@ const TransactionList = ({ onEdit }) => {
                     ))}
                     {transactions.length === 0 && (
                         <tr>
-                            <td colSpan="7" className="text-center">Chưa có dữ liệu</td>
+                            <td colSpan="9" className="text-center">Chưa có dữ liệu</td>
                         </tr>
                     )}
                 </tbody>

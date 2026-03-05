@@ -100,8 +100,9 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
                     rowsHtml += `
                         <tr>
                             <td style="border: 1px solid #000; text-align: center;">${format(new Date(tx.date), 'dd/MM/yyyy')}</td>
+                            <td style="border: 1px solid #000; text-align: center;">${tx.voucherCode || '-'}</td>
                             <td style="border: 1px solid #000;">${partnerName}</td>
-                            <td style="border: 1px solid #000;">${tx.voucherCode ? `[${tx.voucherCode}] ` : ''}${tx.content}</td>
+                            <td style="border: 1px solid #000;">${tx.content}</td>
                             <td style="border: 1px solid #000; text-align: center;">${unit?.name || '-'}</td>
                             <td style="border: 1px solid #000; text-align: center;">${tx.quantity || 1}</td>
                             <td style="border: 1px solid #000; text-align: right;">${tx.unitPrice || 0}</td>
@@ -116,7 +117,7 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
                 const catTotal = items.reduce((s, i) => s + i.amount, 0);
                 rowsHtml += `
                     <tr style="background-color: #f3f4f6; font-weight: bold;">
-                        <td colspan="7" style="border: 1px solid #000; text-align: right;">Cộng hạng mục (${catName}):</td>
+                        <td colspan="9" style="border: 1px solid #000; text-align: right;">Cộng hạng mục (${catName}):</td>
                         <td style="border: 1px solid #000; text-align: right;">${catTotal}</td>
                     </tr>
                 `;
@@ -125,7 +126,7 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
 
             rowsHtml += `
                 <tr style="background-color: #d1d5db; font-weight: bold;">
-                    <td colspan="7" style="border: 1px solid #000; text-align: right; text-transform: uppercase;">TỔNG ${typeObj.label}:</td>
+                    <td colspan="9" style="border: 1px solid #000; text-align: right; text-transform: uppercase;">TỔNG ${typeObj.label}:</td>
                     <td style="border: 1px solid #000; text-align: right; border: 2px solid #000;">${typeTotal}</td>
                 </tr>
             `;
@@ -162,8 +163,9 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
                 <thead>
                     <tr>
                         <th style="width: 100px;">Ngày</th>
-                        <th style="width: 250px;">Đối tác / Người nhận</th>
-                        <th style="width: 350px;">Nội dung chi tiết</th>
+                        <th style="width: 120px;">Số hoá đơn</th>
+                        <th style="width: 200px;">Đối tác / Người nhận</th>
+                        <th style="width: 300px;">Nội dung</th>
                         <th style="width: 80px;">ĐVT</th>
                         <th style="width: 60px;">SL</th>
                         <th style="width: 120px;">Đơn giá</th>
@@ -177,15 +179,15 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
                     ${rowsHtml}
                     <tr><td colspan="9" style="border:none;"></td></tr>
                     <tr style="font-weight: bold; font-size: 14px;">
-                        <td colspan="8" style="text-align: right; border: 2px solid #000; background-color: #f8fafc;">TỔNG CỘNG THU TRONG KỲ:</td>
+                        <td colspan="9" style="text-align: right; border: 2px solid #000; background-color: #f8fafc;">TỔNG CỘNG THU TRONG KỲ:</td>
                         <td style="text-align: right; border: 2px solid #000; background-color: #f0fdf4; color: #166534;">${totalIncome}</td>
                     </tr>
                     <tr style="font-weight: bold; font-size: 14px;">
-                        <td colspan="8" style="text-align: right; border: 2px solid #000; background-color: #f8fafc;">TỔNG CỘNG CHI TRONG KỲ:</td>
+                        <td colspan="9" style="text-align: right; border: 2px solid #000; background-color: #f8fafc;">TỔNG CỘNG CHI TRONG KỲ:</td>
                         <td style="text-align: right; border: 2px solid #000; background-color: #fef2f2; color: #991b1b;">${totalExpense}</td>
                     </tr>
                     <tr style="font-weight: bold; font-size: 16px; background-color: #fef3c7;">
-                        <td colspan="8" style="text-align: right; border: 2px solid #000;">CÂN ĐỐI DƯ CUỐI KỲ:</td>
+                        <td colspan="9" style="text-align: right; border: 2px solid #000;">CÂN ĐỐI DƯ CUỐI KỲ:</td>
                         <td style="text-align: right; border: 2px solid #000; color: ${balance >= 0 ? '#166534' : '#991b1b'};">${balance}</td>
                     </tr>
                 </tbody>
@@ -305,10 +307,11 @@ export const exportToPDF = (transactions, categories = [], units = [], partners 
                 <thead>
                     <tr>
                         <th width="80">Ngày</th>
+                        <th width="100">Số hoá đơn</th>
                         <th width="150">Đối tác / Người nhận</th>
-                        <th>Nội dung chi tiết giao dịch</th>
-                        <th width="80">ĐVT</th>
-                        <th width="60">SL</th>
+                        <th>Nội dung</th>
+                        <th width="60">ĐVT</th>
+                        <th width="40">SL</th>
                         <th width="100">Đơn giá</th>
                         <th width="120">Thành tiền</th>
                     </tr>
@@ -316,11 +319,11 @@ export const exportToPDF = (transactions, categories = [], units = [], partners 
                 <tbody>
                     ${groupedStructure.map(typeGroup => `
                         <tr>
-                            <td colspan="7" class="type-header" style="color: ${typeGroup.color}">${typeGroup.label}</td>
+                            <td colspan="8" class="type-header" style="color: ${typeGroup.color}">${typeGroup.label}</td>
                         </tr>
                         ${typeGroup.categories.map(cat => `
                             <tr>
-                                <td colspan="7" class="category-header">&nbsp;&nbsp;&nbsp;&nbsp;Hạng mục: ${cat.name}</td>
+                                <td colspan="8" class="category-header">&nbsp;&nbsp;&nbsp;&nbsp;Hạng mục: ${cat.name}</td>
                             </tr>
                             ${cat.items.map(tx => {
         const partner = partners.find(p => p.id === tx.partnerId);
@@ -328,8 +331,9 @@ export const exportToPDF = (transactions, categories = [], units = [], partners 
         return `
                                 <tr>
                                     <td class="text-center">${format(new Date(tx.date), 'dd/MM/yyyy')}</td>
+                                    <td class="text-center">${tx.voucherCode || '-'}</td>
                                     <td>${partner?.name || tx.receiver || '-'}</td>
-                                    <td>${tx.voucherCode ? `[${tx.voucherCode}] ` : ''}${tx.content}</td>
+                                    <td>${tx.content}</td>
                                     <td class="text-center">${unit?.name || '-'}</td>
                                     <td class="text-center">${tx.quantity || 1}</td>
                                     <td class="text-right">${new Intl.NumberFormat('vi-VN').format(tx.unitPrice || 0)}</td>
@@ -338,12 +342,12 @@ export const exportToPDF = (transactions, categories = [], units = [], partners 
                                 `;
     }).join('')}
                             <tr class="total-row">
-                                <td colspan="6" class="text-right">Cộng hạng mục (${cat.name}):</td>
+                                <td colspan="7" class="text-right">Cộng hạng mục (${cat.name}):</td>
                                 <td class="text-right amount-cell">${new Intl.NumberFormat('vi-VN').format(cat.total)}</td>
                             </tr>
                         `).join('')}
                         <tr class="total-row" style="background-color: #d1d5db;">
-                            <td colspan="6" class="text-right" style="text-transform: uppercase;">TỔNG ${typeGroup.label}:</td>
+                            <td colspan="7" class="text-right" style="text-transform: uppercase;">TỔNG ${typeGroup.label}:</td>
                             <td class="text-right amount-cell" style="font-size: 13px;">${new Intl.NumberFormat('vi-VN').format(typeGroup.total)}</td>
                         </tr>
                     `).join('')}
@@ -424,7 +428,7 @@ export const printVoucher = (tx) => {
         <body>
             <div class="voucher">
                 <div class="meta">
-                    <div>Số: <strong>${tx.voucherCode || tx.id.substring(0, 8).toUpperCase()}</strong></div>
+                    <div>Số hoá đơn: <strong>${tx.voucherCode || '-'}</strong></div>
                     <div>Ngày: ${dateStr}</div>
                 </div>
                 
@@ -634,26 +638,28 @@ export const printProfessionalReport = (transactions, categories, partners, unit
                 <thead>
                     <tr>
                         <th width="75">Ngày</th>
+                        <th width="90">Số hoá đơn</th>
                         <th class="text-left">Nội dung</th>
-                        <th width="50">ĐVT</th>
-                        <th width="35">SL</th>
+                        <th width="45">ĐVT</th>
+                        <th width="30">SL</th>
                         <th width="85">Đơn Giá</th>
                         <th width="90">Thành Tiền</th>
                         <th class="text-left">Đối tác</th>
-                        <th width="100">Chứng từ</th>
+                        <th width="90">Chứng từ</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${groupedData.map((cat, catIdx) => `
                         <tr class="category-header-row">
-                            <td colspan="8">${cat.name.toUpperCase()}</td>
+                            <td colspan="9">${cat.name.toUpperCase()}</td>
                         </tr>
                         ${cat.items.map((tx, txIdx) => {
         const txKey = `tx_${catIdx}_${txIdx}`;
         return `
                             <tr>
                                 <td class="text-center">${format(new Date(tx.date), 'dd/MM/yyyy')}</td>
-                                <td class="text-left">${tx.voucherCode ? `[${tx.voucherCode}] ` : ''}${tx.content}</td>
+                                <td class="text-center">${tx.voucherCode || '-'}</td>
+                                <td class="text-left">${tx.content}</td>
                                 <td class="text-center">${tx.unitName}</td>
                                 <td class="text-center">${tx.quantity || 1}</td>
                                 <td class="text-right">${new Intl.NumberFormat('vi-VN').format(tx.unitPrice || 0)}</td>
@@ -672,7 +678,7 @@ export const printProfessionalReport = (transactions, categories, partners, unit
                         `;
     }).join('')}
                         <tr class="total-row">
-                            <td colspan="5" class="text-right">TỔNG NHÓM (${cat.name})</td>
+                            <td colspan="6" class="text-right">TỔNG NHÓM (${cat.name})</td>
                             <td class="text-right">${new Intl.NumberFormat('vi-VN').format(cat.items.reduce((s, i) => s + i.amount, 0))}</td>
                             <td colspan="2"></td>
                         </tr>
@@ -680,17 +686,17 @@ export const printProfessionalReport = (transactions, categories, partners, unit
                     
                     <!-- Unified Summary Rows -->
                     <tr class="total-row" style="border-top: 2px solid #000;">
-                        <td colspan="5" class="text-right" style="padding: 10px; font-size: 14px;">TỔNG SỐ TIỀN ĐÃ CHI</td>
+                        <td colspan="6" class="text-right" style="padding: 10px; font-size: 14px;">TỔNG SỐ TIỀN ĐÃ CHI</td>
                         <td class="text-right" style="padding: 10px; font-size: 14px;">${new Intl.NumberFormat('vi-VN').format(totalSpent)}</td>
                         <td colspan="2"></td>
                     </tr>
                     <tr class="total-row">
-                        <td colspan="5" class="text-right" style="padding: 10px; font-size: 14px;">SỐ TIỀN THU</td>
+                        <td colspan="6" class="text-right" style="padding: 10px; font-size: 14px;">SỐ TIỀN THU</td>
                         <td class="text-right" style="padding: 10px; font-size: 14px;">${new Intl.NumberFormat('vi-VN').format(advanceAmount)}</td>
                         <td colspan="2"></td>
                     </tr>
                     <tr class="total-row">
-                        <td colspan="5" class="text-right" style="padding: 10px; font-size: 14px;">${balanceLabel}</td>
+                        <td colspan="6" class="text-right" style="padding: 10px; font-size: 14px;">${balanceLabel}</td>
                         <td class="text-right" style="padding: 10px; font-size: 14px;">${new Intl.NumberFormat('vi-VN').format(displayBalance)}</td>
                         <td colspan="2"></td>
                     </tr>

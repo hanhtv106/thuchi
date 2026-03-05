@@ -139,6 +139,7 @@ const Reports = () => {
                                 <th>Ngày</th>
                                 <th>Loại</th>
                                 <th>Hạng mục</th>
+                                <th>Số hoá đơn</th>
                                 <th>Đối tác</th>
                                 <th>Nội dung</th>
                                 <th className="text-right">Số tiền</th>
@@ -156,6 +157,7 @@ const Reports = () => {
                                             </span>
                                         </td>
                                         <td>{categories.find(c => c.id === tx.categoryId)?.name || tx.categoryId}</td>
+                                        <td>{tx.voucherCode || '-'}</td>
                                         <td>{partners.find(p => p.id === tx.partnerId)?.name || tx.partner || tx.receiver || '-'}</td>
                                         <td className="content-cell" title={tx.content}>{tx.content}</td>
                                         <td className="text-right amount-cell">
@@ -176,7 +178,7 @@ const Reports = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="7" className="text-center">Không có dữ liệu trong khoảng thời gian này</td>
+                                    <td colSpan="8" className="text-center">Không có dữ liệu trong khoảng thời gian này</td>
                                 </tr>
                             )}
                         </tbody>

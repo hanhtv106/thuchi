@@ -248,7 +248,7 @@ const TransactionForm = ({ onClose, initialData }) => {
                             <input type="date" name="date" value={formData.date} onChange={handleChange} required />
                         </div>
                         <div className="form-group">
-                            <label>Mã / Số chứng từ</label>
+                            <label>Số hoá đơn</label>
                             <input type="text" name="voucherCode" value={formData.voucherCode} onChange={handleChange} placeholder="Tùy chọn" />
                         </div>
                     </div>
