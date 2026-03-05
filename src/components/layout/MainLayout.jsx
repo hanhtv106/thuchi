@@ -27,7 +27,12 @@ export const MainLayout = () => {
         <div className="app-layout">
             <aside className={clsx('sidebar', { 'open': isSidebarOpen, 'closed': !isSidebarOpen })}>
                 <div className="sidebar-header">
-                    {isSidebarOpen && <h2 className="logo">ThuChi App</h2>}
+                    {isSidebarOpen && (
+                        <div className="logo-container">
+                            <img src="/logo.png" alt="Logo" className="app-logo" />
+                            <span className="logo-text">HOÀNG GIA</span>
+                        </div>
+                    )}
                     <button onClick={toggleSidebar} className="toggle-btn">
                         {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>

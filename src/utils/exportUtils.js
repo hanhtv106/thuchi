@@ -151,9 +151,9 @@ export const exportToExcel = (transactions, categories = [], units = [], partner
         </head>
         <body>
             <table>
-                <tr><td colspan="9" style="border:none;" class="text-header">CÔNG TY CỔ PHẦN SAMCO VINA</td></tr>
-                <tr><td colspan="9" style="border:none;">Số 03 đường số 1, KCN Sóng Thần, P. Dĩ An, TP. Hồ Chí Minh</td></tr>
-                <tr><td colspan="9" style="border:none;">MST: 0313121108 - Hotline: 0907 101 899</td></tr>
+                <tr><td colspan="9" style="border:none;" class="text-header">CÔNG TY CỔ PHẦN THIẾT BỊ NÂNG HOÀNG GIA</td></tr>
+                <tr><td colspan="9" style="border:none;">Địa chỉ: SỐ 19, ĐS 12, KNO HIỆP BÌNH PHƯỚC, KP2, HIỆP BÌNH, TPHCM</td></tr>
+                <tr><td colspan="9" style="border:none;">MST: 0315840394 - Hotline: 0907 101 899</td></tr>
                 <tr><td colspan="9" style="border:none;"></td></tr>
                 <tr><td colspan="9" style="border:none;" class="report-title">BÁO CÁO CHI TIẾT THU CHI</td></tr>
 
@@ -281,10 +281,10 @@ export const exportToPDF = (transactions, categories = [], units = [], partners 
         </head>
         <body>
             <div class="header">
-                <div class="company-info">
-                    <h2>CÔNG TY CỔ PHẦN SAMCO VINA</h2>
-                    <p>Địa chỉ: Số 03 đường số 1, KCN Sóng Thần, P. Dĩ An, TP. Hồ Chí Minh</p>
-                    <p>MST: 0313121108 - Hotline: 0907 101 899</p>
+                <div className="company-info">
+                    <h2>CÔNG TY CỔ PHẦN THIẾT BỊ NÂNG HOÀNG GIA</h2>
+                    <p>Địa chỉ: SỐ 19, ĐS 12, KNO HIỆP BÌNH PHƯỚC, KP2, HIỆP BÌNH, TPHCM</p>
+                    <p>MST: 0315840394 - Hotline: 0907 101 899</p>
                 </div>
                 <div class="text-right">
                     <p>Ngày xuất: ${now}</p>
@@ -539,7 +539,7 @@ export const printProfessionalReport = (transactions, categories, partners, unit
     const displayBalance = Math.abs(rawBalance);
 
     // DÁN LINK LOGO VÀO ĐÂY / PASTE LOGO URL HERE
-    const LOGO_URL = 'https://bizweb.dktcdn.net/100/595/748/themes/1043990/assets/logo.png?1762833503608';
+    const LOGO_URL = '/logo.png';
 
     const html = `
         <!DOCTYPE html>
@@ -613,10 +613,10 @@ export const printProfessionalReport = (transactions, categories, partners, unit
                 <div class="logo-container">
                     <img src="${LOGO_URL}" alt="Logo" onerror="this.style.display='none'">
                 </div>
-                <div class="company-info">
-                    <h2>CÔNG TY CỔ PHẦN SAMCO VINA</h2>
-                    <p>Địa chỉ:Số 03 đường số 1, KCN Sóng Thần, P. Dĩ An, TP. Hồ Chí Minh</p>
-                    <p>MST: 0313121108 - Hotline: 0907 101 899</p>
+                <div className="company-info">
+                    <h2>CÔNG TY CỔ PHẦN THIẾT BỊ NÂNG HOÀNG GIA</h2>
+                    <p>Địa chỉ: SỐ 19, ĐS 12, KNO HIỆP BÌNH PHƯỚC, KP2, HIỆP BÌNH, TPHCM</p>
+                    <p>MST: 0315840394 - Hotline: 0907 101 899</p>
                 </div>
             </div>
 
