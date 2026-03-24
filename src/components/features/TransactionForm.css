@@ -7,22 +7,9 @@
 /* ─── Legacy shared stubs (kept to avoid breaking imports) ─── */
 .transaction-page { display: flex; flex-direction: column; gap: 1rem; }
 .page-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-.btn-primary {
-    background: var(--primary, #2563eb);
-    color: #fff;
-    padding: 0.5rem 1.25rem;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 600;
-    font-size: 0.9rem;
-    min-height: 44px;
-    touch-action: manipulation;
-}
-.btn-primary:hover { background: var(--primary-dark, #1d4ed8); }
+/* NOTE: .btn-primary is intentionally NOT defined globally here.
+   This avoids overriding .btn.btn-primary in DataManagementTable.
+   Form buttons are scoped to .form-actions below. */
 
 /* ═══════════════════════════════════════════════════════════════
    Modal overlay
@@ -357,17 +344,18 @@
 .type-toggle button:first-child.active { color: #15803d; }  /* Thu - green */
 .type-toggle button:last-child.active  { color: #b91c1c; }  /* Chi - red   */
 
-/* ─── Form actions (footer) ──────────────────────────────────── */
+/* ─── Form actions (footer) — buttons scoped here ──────────── */
 .form-actions {
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;
     padding-top: 0.75rem;
     border-top: 1px solid #f1f5f9;
-    flex-direction: row;  /* always row on mobile too — save vertical space */
+    flex-direction: row;
 }
 
-.btn-secondary {
+/* Scoped: only inside .form-actions to avoid global conflicts */
+.form-actions .btn-secondary {
     flex: 1;
     min-height: 40px;
     padding: 0 1rem;
@@ -382,10 +370,10 @@
     transition: background 0.12s, border-color 0.12s;
     outline: none;
 }
-.btn-secondary:hover { background: #f1f5f9; border-color: #cbd5e1; }
-.btn-secondary:focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #64748b; }
+.form-actions .btn-secondary:hover { background: #f1f5f9; border-color: #cbd5e1; }
+.form-actions .btn-secondary:focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #64748b; }
 
-.btn-primary {
+.form-actions .btn-primary {
     flex: 1;
     min-height: 40px;
     padding: 0 1rem;
@@ -405,10 +393,11 @@
     transition: transform 0.12s, box-shadow 0.12s;
     outline: none;
 }
-.btn-primary:hover  { box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35); transform: translateY(-1px); }
-.btn-primary:active { transform: scale(0.98); }
-.btn-primary:focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2563eb; }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.form-actions .btn-primary:hover  { box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35); transform: translateY(-1px); }
+.form-actions .btn-primary:active { transform: scale(0.98); }
+.form-actions .btn-primary:focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2563eb; }
+.form-actions .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
 
 /* ─── File upload ────────────────────────────────────────────── */
 .file-upload {
@@ -527,6 +516,6 @@
     .type-toggle        { min-height: 44px; border-radius: 10px; }
     .type-toggle button { font-size: 0.9375rem; border-radius: 8px; }
     .form-actions       { gap: 0.75rem; padding-top: 1rem; }
-    .btn-secondary,
-    .btn-primary        { min-height: 44px; font-size: 0.9375rem; border-radius: 10px; }
+    .form-actions .btn-secondary,
+    .form-actions .btn-primary  { min-height: 44px; font-size: 0.9375rem; border-radius: 10px; }
 }
