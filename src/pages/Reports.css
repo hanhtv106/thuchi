@@ -34,8 +34,6 @@
     color: #1f2937;
     outline: none;
     background: #fff;
-    -webkit-appearance: none;
-    appearance: none;
 }
 .filter-inputs select:focus,
 .date-range-filter input:focus { border-color: #2563eb; }
