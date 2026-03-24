@@ -1,259 +1,300 @@
-/* MainLayout.css */
+/* ═══════════════════════════════════════════════════════════════
+   MainLayout.css  —  Mobile-first shell layout
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── App shell ──────────────────────────────────────────────── */
 .app-layout {
-    display: flex;
-    height: 100vh;
-    width: 100%;
+  display: flex;
+  height: 100dvh; /* dvh handles mobile browser chrome */
+  width: 100%;
+  overflow: hidden;
 }
 
-/* Sidebar */
+/* ── Sidebar (drawer on mobile, fixed panel on desktop) ─────── */
 .sidebar {
-    background-color: #fff;
-    border-right: 1px solid #e5e7eb;
-    display: flex;
-    flex-direction: column;
-    transition: width 0.3s ease;
-    overflow: hidden;
+  position: fixed;
+  inset: 0 auto 0 0;            /* full height, left-anchored */
+  z-index: 200;
+  width: 280px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  /* Slide off-screen by default on mobile */
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  /* WDG: overscroll-behavior in drawers */
+  overscroll-behavior: contain;
+  /* WDG: safe area left padding for notch */
+  padding-left: env(safe-area-inset-left);
 }
 
 .sidebar.open {
-    width: 260px;
+  transform: translateX(0);
+  box-shadow: var(--shadow-lg);
 }
 
-.sidebar.closed {
-    width: 60px;
-}
-
+/* ── Sidebar header ─────────────────────────────────────────── */
 .sidebar-header {
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 1rem;
-    border-bottom: 1px solid #e5e7eb;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--sp-4);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .logo-container {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  overflow: hidden;
 }
 
 .app-logo {
-    width: 64px;
-    height: 64px;
-    object-fit: contain;
-    mix-blend-mode: multiply;
+  width: 40px; height: 40px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  /* WDG: explicit width+height prevents CLS */
 }
 
 .logo-text {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--primary-color, #2563eb);
-    margin: 0;
-    white-space: nowrap;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
 }
 
 .toggle-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 0.375rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6b7280;
+  /* WDG: min tap target 44px */
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* WDG: focus-visible ring */
+  outline: none;
 }
+.toggle-btn:focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--primary); }
+.toggle-btn:hover  { background: var(--bg); color: var(--text); }
 
-.toggle-btn:hover {
-    background-color: #f3f4f6;
-    color: #111827;
-}
-
+/* ── Nav items ──────────────────────────────────────────────── */
 .sidebar-nav {
-    flex: 1;
-    padding: 1rem 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+  flex: 1;
+  padding: var(--sp-3) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .nav-item {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    color: #4b5563;
-    text-decoration: none;
-    gap: 0.75rem;
-    transition: all 0.2s;
-    white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  min-height: var(--tap-min);  /* WDG: ≥44px tap target */
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  border-radius: 0;
+  transition: background 0.15s, color 0.15s;
+  /* WDG: tap highlight */
+  -webkit-tap-highlight-color: transparent;
 }
 
-.nav-item:hover {
-    background-color: #f9fafb;
-    color: #111827;
-}
+.nav-item:hover  { background: var(--bg); color: var(--text); }
+.nav-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 
 .nav-item.active {
-    background-color: #eff6ff;
-    color: var(--primary-color);
-    border-right: 3px solid var(--primary-color);
+  background: var(--primary-light);
+  color: var(--primary);
+  border-right: 3px solid var(--primary);
+  font-weight: 600;
 }
 
+.nav-item span { white-space: nowrap; }
+
+/* ── Sidebar footer ─────────────────────────────────────────── */
 .sidebar-footer {
-    padding: 1rem;
-    border-top: 1px solid #e5e7eb;
+  padding: var(--sp-4);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  /* WDG: safe-area bottom for iPhone home indicator */
+  padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom));
 }
+
+.user-info-wrapper { margin-bottom: var(--sp-3); }
 
 .user-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    text-decoration: none;
-    color: inherit;
-    padding: 0.5rem;
-    border-radius: 8px;
-    transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  text-decoration: none;
+  color: inherit;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-md);
+  min-height: var(--tap-min);
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
-
-.user-info:hover {
-    background-color: #f3f4f6;
-}
-
+.user-info:hover { background: var(--bg); }
 
 .avatar {
-    width: 32px;
-    height: 32px;
-    background-color: #bfdbfe;
-    color: #1e40af;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  width: 36px; height: 36px; min-width: 36px;
+  background: #bfdbfe;
+  color: #1e40af;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
 }
 
-.user-details {
-    flex: 1;
-    overflow: hidden;
-}
+.user-details { flex: 1; overflow: hidden; min-width: 0; }
 
 .user-name {
-    font-weight: 500;
-    font-size: 0.875rem;
-    margin: 0;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-role {
-    font-size: 0.75rem;
-    color: #6b7280;
-    margin: 0;
-    text-transform: capitalize;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: capitalize;
+  margin-top: 1px;
 }
 
 .logout-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.375rem;
-    background-color: white;
-    cursor: pointer;
-    color: #ef4444;
-    justify-content: center;
-    transition: all 0.2s;
+  width: 100%;
+  min-height: var(--tap-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+  background: #fff;
+  cursor: pointer;
+  color: var(--danger);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
 }
+.logout-btn:hover         { background: #fef2f2; border-color: #fca5a5; }
+.logout-btn:focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--danger); }
 
-.logout-btn:hover {
-    background-color: #fef2f2;
-    border-color: #fca5a5;
+/* ── Overlay ────────────────────────────────────────────────── */
+.sidebar-overlay {
+  display: none; /* hidden by default */
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 199; /* just below sidebar */
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
+.sidebar.open ~ .sidebar-overlay { display: block; }
 
-/* Main Content Base Styles */
+/* ── Main content ───────────────────────────────────────────── */
 .main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background-color: #f9fafb;
-    min-width: 0;
-    /* Prevent overflow */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+  min-width: 0;
+  /* Offset: no sidebar on mobile, sidebar on desktop */
+  margin-left: 0;
+  transition: margin-left 0.25s ease;
 }
 
+/* ── Top header ─────────────────────────────────────────────── */
 .top-header {
-    height: 64px;
-    background-color: white;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    align-items: center;
-    padding: 0 2rem;
-    gap: 1rem;
-}
-
-.page-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0;
-}
-
-.content-area {
-    flex: 1;
-    overflow-y: auto;
-    padding: 2rem;
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-4);
+  gap: var(--sp-3);
+  flex-shrink: 0;
+  /* WDG: safe-area top for status bar */
+  padding-top: env(safe-area-inset-top);
+  height: calc(56px + env(safe-area-inset-top));
 }
 
 .mobile-menu-toggle {
-    display: none;
-    background: none;
-    border: none;
-    color: #4b5563;
-    cursor: pointer;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+.mobile-menu-toggle:focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--primary); }
+.mobile-menu-toggle:hover { background: var(--bg); }
+
+.page-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Responsive Layout Improvements */
-@media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        z-index: 2000;
-        transform: translateX(-100%);
-        width: 260px !important;
-        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
-    }
+/* ── Content area ───────────────────────────────────────────── */
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain; /* WDG: modal-style scroll lock */
+  padding: var(--sp-4);
+  /* WDG: safe-area bottom for home indicator */
+  padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom));
+}
 
-    .sidebar.open {
-        transform: translateX(0);
-    }
+/* ── Desktop ≥ 768px  ───────────────────────────────────────── */
+@media (min-width: 768px) {
+  .sidebar {
+    position: relative;    /* back in flow */
+    transform: none;       /* always visible */
+    box-shadow: none;
+    width: 64px;           /* collapsed icon-only */
+    transition: width 0.25s ease;
+  }
 
-    .top-header {
-        padding: 0 1rem;
-    }
+  .sidebar.open { width: 260px; }
 
-    .content-area {
-        padding: 1rem;
-    }
+  .mobile-menu-toggle { display: none; }
 
-    .mobile-menu-toggle {
-        display: block;
-    }
+  .top-header { padding: 0 var(--sp-8); height: 60px; }
 
-    .sidebar-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        display: none;
-    }
+  .page-title { font-size: 1.25rem; }
 
-    .sidebar.open~.sidebar-overlay {
-        display: block;
-    }
+  .content-area { padding: var(--sp-8); }
+
+  .sidebar-overlay { display: none !important; } /* never overlay on desktop */
+}
+
+/* ── Large ≥ 1024px ─────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .sidebar { width: 260px; } /* always open on large screens */
 }

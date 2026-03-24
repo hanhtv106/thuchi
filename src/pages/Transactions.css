@@ -1,0 +1,96 @@
+/* ═══════════════════════════════════════════════════════════════
+   Transactions.css  —  Mobile-first page styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Page wrapper ─────────────────────────────────────────── */
+.tx-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.tx-page__denied {
+  text-align: center;
+  padding: var(--sp-8);
+  color: var(--text-muted);
+}
+
+/* ── Summary cards — 1-col stack on mobile ──────────────────── */
+.summary-cards {
+  display: grid;
+  grid-template-columns: 1fr;     /* mobile: stack */
+  gap: var(--sp-3);
+}
+
+.summary-card {
+  padding: var(--sp-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.summary-card__label {
+  margin: 0 0 var(--sp-1);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.summary-card__value {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums; /* WDG */
+  line-height: 1.2;
+}
+
+/* Color variants */
+.summary-card--income  { background: #f0fdf4; border-color: #bbf7d0; }
+.summary-card--income  .summary-card__value  { color: #15803d; }
+.summary-card--expense { background: #fef2f2; border-color: #fecaca; }
+.summary-card--expense .summary-card__value  { color: #b91c1c; }
+.summary-card--balance { background: #eff6ff; border-color: #bfdbfe; }
+.summary-card--balance .summary-card__value  { color: #1d4ed8; }
+
+/* ── Toolbar ─────────────────────────────────────────────────── */
+.tx-page__toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ── Add button ──────────────────────────────────────────────── */
+.btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-4);
+  height: var(--tap-min); /* WDG: ≥44px tap target */
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, transform 0.1s;
+  outline: none;
+}
+.btn-add:hover  { background: var(--primary-dark); }
+.btn-add:active { transform: scale(0.97); }
+.btn-add:focus-visible {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--primary);
+}
+
+/* ── 2-col grid on tablet ≥ 480px ───────────────────────────── */
+@media (min-width: 480px) {
+  .summary-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ── Larger screens ─────────────────────────────────────────── */
+@media (min-width: 768px) {
+  .summary-card__value { font-size: 1.5rem; }
+}
