@@ -208,7 +208,7 @@
         flex-direction: column;
     }
     
-    .table-container {
+    .settlement-page .table-container {
         display: none; /* hide table on mobile */
     }
     .settlement-card-list {
