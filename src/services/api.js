@@ -92,7 +92,10 @@ const apiService = {
             isDeleted: item.is_deleted,
             vatPercentage: item.vat_percentage,
             vatAmount: item.vat_amount,
-            voucherCode: item.voucher_code
+            voucherCode: item.voucher_code,
+            discountPercentage: item.discount_percentage,
+            discountAmount: item.discount_amount,
+            subtotal: item.subtotal,
         }));
     },
 
@@ -107,12 +110,15 @@ const apiService = {
             partner_id: tx.partnerId,
             quantity: tx.quantity,
             unit_price: tx.unitPrice,
+            subtotal: tx.subtotal,
             receiver: tx.receiver,
             attachments: tx.attachments,
             created_by: tx.createdBy,
             vat_percentage: tx.vatPercentage,
             vat_amount: tx.vatAmount,
-            voucher_code: tx.voucherCode
+            voucher_code: tx.voucherCode,
+            discount_percentage: tx.discountPercentage,
+            discount_amount: tx.discountAmount,
         });
 
         if (error) throw error;
@@ -131,13 +137,16 @@ const apiService = {
             status: tx.status,
             quantity: tx.quantity,
             unit_price: tx.unitPrice,
+            subtotal: tx.subtotal,
             receiver: tx.receiver,
             attachments: tx.attachments,
             is_settled: tx.isSettled,
             settled_at: tx.settledAt,
             vat_percentage: tx.vatPercentage,
             vat_amount: tx.vatAmount,
-            voucher_code: tx.voucherCode
+            voucher_code: tx.voucherCode,
+            discount_percentage: tx.discountPercentage,
+            discount_amount: tx.discountAmount,
         }).eq('id', id);
 
         if (error) throw error;
