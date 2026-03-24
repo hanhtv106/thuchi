@@ -237,16 +237,19 @@
 /* ─── Type toggle (Thu / Chi) ────────────────────────────────── */
 .type-toggle {
     display: flex;
+    align-items: stretch;      /* <── button fill full height */
     background: #f1f5f9;
     border-radius: 10px;
     padding: 3px;
     gap: 3px;
     min-height: 44px;
+    box-sizing: border-box;
 }
 
 .type-toggle button {
     flex: 1;
-    padding: 0;
+    height: auto;              /* respect parent stretch */
+    padding: 0 0.5rem;
     border: none;
     cursor: pointer;
     background: transparent;
@@ -258,17 +261,23 @@
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     outline: none;
+    white-space: nowrap;
 }
 
 .type-toggle button:focus-visible {
     box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2563eb;
 }
 
+/* Active: Thu = green tint, Chi = red tint */
 .type-toggle button.active {
     background: #fff;
     color: #0f172a;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
 }
+
+/* Specific active colors */
+.type-toggle button:first-child.active { color: #15803d; }  /* Thu - green */
+.type-toggle button:last-child.active  { color: #b91c1c; }  /* Chi - red   */
 
 /* ─── Form actions (footer) ──────────────────────────────────── */
 .form-actions {
