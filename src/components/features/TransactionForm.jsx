@@ -242,6 +242,8 @@ const TransactionForm = ({ onClose, initialData }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="tx-form">
+
+                    {/* ── Row 1: Loại phiếu | Ngày ──────────────── */}
                     <div className="form-row">
                         <div className="form-group">
                             <label>Loại phiếu</label>
@@ -258,54 +260,48 @@ const TransactionForm = ({ onClose, initialData }) => {
                                 >Chi</button>
                             </div>
                         </div>
-
                         <div className="form-group">
                             <label>Ngày</label>
                             <input type="date" name="date" value={formData.date} onChange={handleChange} required />
                         </div>
-                        <div className="form-group">
-                            <label>Số HĐ</label>
-                            <input type="text" name="voucherCode" value={formData.voucherCode} onChange={handleChange} placeholder="Tùy chọn" />
-                        </div>
                     </div>
 
-                    <div className="form-row">
-                        <div className="form-group" style={{ flex: 2 }}>
-                            <label>Hạng mục <span style={{ color: 'red' }}>*</span></label>
-                            <Select
-                                value={categoryOptions.find(o => o.value === formData.categoryId) || null}
-                                onChange={(selected) => handleSelectChange('categoryId', selected)}
-                                options={categoryOptions}
-                                placeholder="-- Chọn hạng mục --"
-                                isClearable
-                                styles={selectStyles}
-                            />
-                        </div>
-                        <div className="form-group" style={{ flex: 1 }}>
-                            <label>Đơn vị tính</label>
-                            <Select
-                                value={unitOptions.find(o => o.value === formData.unitId) || null}
-                                onChange={(selected) => handleSelectChange('unitId', selected)}
-                                options={unitOptions}
-                                placeholder="-- Chọn đơn vị --"
-                                isClearable
-                                styles={selectStyles}
-                            />
-                        </div>
+                    {/* ── Row 2: Hạng mục (full width) ──────────── */}
+                    <div className="form-group">
+                        <label>Hạng mục <span style={{ color: 'red' }}>*</span></label>
+                        <Select
+                            value={categoryOptions.find(o => o.value === formData.categoryId) || null}
+                            onChange={(selected) => handleSelectChange('categoryId', selected)}
+                            options={categoryOptions}
+                            placeholder="-- Chọn hạng mục --"
+                            isClearable
+                            styles={selectStyles}
+                        />
                     </div>
 
+                    {/* ── Row 3: Nội dung (full width textarea) ─── */}
                     <div className="form-group">
                         <label>{formData.type === 'income' ? 'Nội dung thu' : 'Nội dung chi'}</label>
                         <textarea name="content" value={formData.content} onChange={handleChange} required rows={2} />
                     </div>
 
-                    <div className="form-row">
+                    {/* ── Row 4: Đơn vị | Số lượng | Đơn giá ───── */}
+                    <div className="form-row three-cols">
+                        <div className="form-group">
+                            <label>Đơn vị tính</label>
+                            <Select
+                                value={unitOptions.find(o => o.value === formData.unitId) || null}
+                                onChange={(selected) => handleSelectChange('unitId', selected)}
+                                options={unitOptions}
+                                placeholder="-- Đơn vị --"
+                                isClearable
+                                styles={selectStyles}
+                            />
+                        </div>
                         <div className="form-group">
                             <label>Số lượng</label>
                             <input type="text" name="quantity" value={formatDisplayNumber(formData.quantity)} onChange={handleNumberFormatChange} />
                         </div>
-
-
                         <div className="form-group">
                             <label>Đơn giá</label>
                             <input
@@ -315,8 +311,12 @@ const TransactionForm = ({ onClose, initialData }) => {
                                 onChange={handleNumberFormatChange}
                             />
                         </div>
+                    </div>
+
+                    {/* ── Row 5: Thành tiền | VAT% | Tiền VAT ──── */}
+                    <div className="form-row three-cols">
                         <div className="form-group">
-                            <label>Thành tiền (trước VAT)</label>
+                            <label>Thành tiền</label>
                             <input
                                 type="text"
                                 value={new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(formData.subtotal || 0)}
@@ -324,23 +324,18 @@ const TransactionForm = ({ onClose, initialData }) => {
                                 className="readonly-amount highlight-total"
                             />
                         </div>
-                    </div>
-
-                    <div className="form-row three-cols">
                         <div className="form-group">
-                            <label>Thuế VAT (%)</label>
+                            <label>VAT (%)</label>
                             <input
                                 type="number"
                                 name="vatPercentage"
                                 value={formData.vatPercentage}
                                 onChange={handleChange}
-                                min="0"
-                                max="100"
-                                step="0.01"
+                                min="0" max="100" step="0.01"
                             />
                         </div>
                         <div className="form-group">
-                            <label>Tiền thuế VAT</label>
+                            <label>Tiền VAT</label>
                             <input
                                 type="text"
                                 value={new Intl.NumberFormat('vi-VN').format(formData.vatAmount)}
@@ -348,17 +343,9 @@ const TransactionForm = ({ onClose, initialData }) => {
                                 className="readonly-amount"
                             />
                         </div>
-                        <div className="form-group">
-                            <label>Tổng thanh toán</label>
-                            <input
-                                type="text"
-                                value={new Intl.NumberFormat('vi-VN').format(formData.amount)}
-                                readOnly
-                                className="readonly-amount highlight-total"
-                            />
-                        </div>
                     </div>
 
+                    {/* ── Row 6: Giảm giá% | Số giảm | Thực TT ── */}
                     <div className="form-row three-cols">
                         <div className="form-group">
                             <label>Giảm giá (%)</label>
@@ -367,14 +354,12 @@ const TransactionForm = ({ onClose, initialData }) => {
                                 name="discountPercentage"
                                 value={formData.discountPercentage}
                                 onChange={handleChange}
-                                min="0"
-                                max="100"
-                                step="0.01"
+                                min="0" max="100" step="0.01"
                                 placeholder="0"
                             />
                         </div>
                         <div className="form-group">
-                            <label>Số tiền giảm giá</label>
+                            <label>Số tiền giảm</label>
                             <input
                                 type="text"
                                 value={new Intl.NumberFormat('vi-VN').format(formData.discountAmount)}
@@ -393,8 +378,7 @@ const TransactionForm = ({ onClose, initialData }) => {
                         </div>
                     </div>
 
-
-
+                    {/* ── Row 7: Người nộp/nhận | Đối tác ──────── */}
                     <div className="form-row">
                         <div className="form-group">
                             <label>{formData.type === 'income' ? 'Người nộp' : 'Người nhận'}</label>
@@ -413,6 +397,13 @@ const TransactionForm = ({ onClose, initialData }) => {
                         </div>
                     </div>
 
+                    {/* ── Row 8: Số HĐ (gần đính kèm) ─────────── */}
+                    <div className="form-group">
+                        <label>Số hoá đơn</label>
+                        <input type="text" name="voucherCode" value={formData.voucherCode} onChange={handleChange} placeholder="Tùy chọn" />
+                    </div>
+
+                    {/* ── Row 9: Đính kèm ───────────────────────── */}
                     <div className="form-group">
                         <label>Đính kèm (Hóa đơn, chứng từ)</label>
                         <div className="file-upload">
@@ -446,6 +437,8 @@ const TransactionForm = ({ onClose, initialData }) => {
             </div>
         </div>
     );
+
 };
 
 export default TransactionForm;
+
