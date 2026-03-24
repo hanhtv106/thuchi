@@ -339,17 +339,19 @@ const TransactionForm = ({ onClose, initialData }) => {
                         </div>
                     </div>
 
-                    {/* ── Row 5: Thành tiền | VAT% | Tiền VAT ──── */}
-                    <div className="form-row three-cols">
-                        <div className="form-group">
-                            <label>Thành tiền</label>
-                            <input
-                                type="text"
-                                value={new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(formData.subtotal || 0)}
-                                readOnly
-                                className="readonly-amount highlight-total"
-                            />
-                        </div>
+                    {/* ── Nhóm Thành Tiền ── */}
+                    <div className="form-group">
+                        <label>Thành tiền</label>
+                        <input
+                            type="text"
+                            value={new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 10 }).format(formData.subtotal || 0)}
+                            readOnly
+                            className="readonly-amount highlight-total"
+                        />
+                    </div>
+
+                    {/* ── Row 5.1: VAT% | Tiền VAT ──── */}
+                    <div className="form-row">
                         <div className="form-group">
                             <label>VAT (%)</label>
                             <input
@@ -371,8 +373,8 @@ const TransactionForm = ({ onClose, initialData }) => {
                         </div>
                     </div>
 
-                    {/* ── Row 6: Giảm giá% | Số giảm | Thực TT ── */}
-                    <div className="form-row three-cols">
+                    {/* ── Row 6: Giảm giá% | Số giảm ── */}
+                    <div className="form-row">
                         <div className="form-group">
                             <label>Giảm giá (%)</label>
                             <input
@@ -393,15 +395,17 @@ const TransactionForm = ({ onClose, initialData }) => {
                                 className="readonly-amount discount-amount"
                             />
                         </div>
-                        <div className="form-group">
-                            <label>Thực thanh toán</label>
-                            <input
-                                type="text"
-                                value={new Intl.NumberFormat('vi-VN').format(formData.amount)}
-                                readOnly
-                                className="readonly-amount highlight-final"
-                            />
-                        </div>
+                    </div>
+
+                    {/* ── Nhóm Thực Thanh Toán ── */}
+                    <div className="form-group">
+                        <label>Thực thanh toán</label>
+                        <input
+                            type="text"
+                            value={new Intl.NumberFormat('vi-VN').format(formData.amount)}
+                            readOnly
+                            className="readonly-amount highlight-final"
+                        />
                     </div>
 
                     {/* ── Row 7: Người nộp/nhận | Đối tác ──────── */}
