@@ -209,6 +209,65 @@
     font-size: 1rem;
 }
 
+/* ─── Đơn vị tính — Select + chips ─────────────────────────── */
+.unit-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.unit-select-box {
+    flex: 1;
+    min-width: 120px;
+}
+
+.unit-chips {
+    display: flex;
+    gap: 0.3rem;
+    flex-shrink: 0;
+}
+
+.unit-chip {
+    padding: 0 0.625rem;
+    height: 40px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+    outline: none;
+}
+
+.unit-chip:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+
+.unit-chip--active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+}
+
+.unit-chip--active:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    color: #fff;
+}
+
+.unit-chip:focus-visible {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2563eb;
+}
+
+
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {

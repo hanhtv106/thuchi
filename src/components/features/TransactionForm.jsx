@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react';
 import { useTransactions } from '../../context/TransactionContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
-import { X, Upload, Plus } from 'lucide-react';
+import { X, Upload } from 'lucide-react';
 import clsx from 'clsx';
 import Select from 'react-select';
-import './TransactionForm.css'; // We'll create this
+import './TransactionForm.css';
+
+// 3 đơn vị thường dùng nhất
+const QUICK_UNITS = ['Cái', 'Bộ', 'Kg'];
 
 const TransactionForm = ({ onClose, initialData }) => {
     const { addTransaction, updateTransaction, categories, units, partners, uploadFile } = useTransactions();
@@ -285,19 +288,42 @@ const TransactionForm = ({ onClose, initialData }) => {
                         <textarea name="content" value={formData.content} onChange={handleChange} required rows={2} />
                     </div>
 
-                    {/* ── Row 4: Đơn vị | Số lượng | Đơn giá ───── */}
-                    <div className="form-row three-cols">
-                        <div className="form-group">
-                            <label>Đơn vị tính</label>
-                            <Select
-                                value={unitOptions.find(o => o.value === formData.unitId) || null}
-                                onChange={(selected) => handleSelectChange('unitId', selected)}
-                                options={unitOptions}
-                                placeholder="-- Đơn vị --"
-                                isClearable
-                                styles={selectStyles}
-                            />
+                    {/* ── Row 4a: Đơn vị tính — riêng 1 dòng với chip gợi ý ── */}
+                    <div className="form-group unit-row">
+                        <label>Đơn vị tính</label>
+                        <div className="unit-input-wrap">
+                            <div className="unit-select-box">
+                                <Select
+                                    value={unitOptions.find(o => o.value === formData.unitId) || null}
+                                    onChange={(selected) => handleSelectChange('unitId', selected)}
+                                    options={unitOptions}
+                                    placeholder="-- Chọn đơn vị --"
+                                    isClearable
+                                    styles={selectStyles}
+                                />
+                            </div>
+                            <div className="unit-chips">
+                                {QUICK_UNITS.map(name => {
+                                    const opt = unitOptions.find(o => o.label.toLowerCase() === name.toLowerCase());
+                                    const isActive = opt && formData.unitId === opt.value;
+                                    return (
+                                        <button
+                                            key={name}
+                                            type="button"
+                                            className={clsx('unit-chip', { 'unit-chip--active': isActive })}
+                                            onClick={() => opt && handleSelectChange('unitId', opt)}
+                                            title={name}
+                                        >
+                                            {name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
+                    </div>
+
+                    {/* ── Row 4b: Số lượng | Đơn giá ── */}
+                    <div className="form-row">
                         <div className="form-group">
                             <label>Số lượng</label>
                             <input type="text" name="quantity" value={formatDisplayNumber(formData.quantity)} onChange={handleNumberFormatChange} />
