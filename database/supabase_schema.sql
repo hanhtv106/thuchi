@@ -89,6 +89,12 @@ CREATE TABLE public.transactions (
     settled_at TIMESTAMP WITH TIME ZONE,
     quantity DECIMAL(18, 2) DEFAULT 1,
     unit_price DECIMAL(18, 2) DEFAULT 0,
+    subtotal DECIMAL(18, 2) DEFAULT 0,           -- Số lượng × đơn giá, trước VAT và giảm giá
+    vat_percentage DECIMAL(5, 2) DEFAULT 0,       -- % thuế VAT
+    vat_amount DECIMAL(18, 2) DEFAULT 0,          -- Tiền thuế VAT
+    discount_percentage DECIMAL(5, 2) DEFAULT 0,  -- % giảm giá
+    discount_amount DECIMAL(18, 2) DEFAULT 0,      -- Số tiền giảm giá
+    voucher_code TEXT,                             -- Số hoá đơn
     receiver TEXT,
     attachments JSONB DEFAULT '[]'::jsonb,
     created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,

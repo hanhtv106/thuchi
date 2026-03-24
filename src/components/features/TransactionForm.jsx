@@ -27,7 +27,9 @@ const TransactionForm = ({ onClose, initialData }) => {
         vatPercentage: 0,
         vatAmount: 0,
         voucherCode: '',
-        subtotal: 0
+        subtotal: 0,
+        discountPercentage: 0,
+        discountAmount: 0
     });
 
 
@@ -47,15 +49,18 @@ const TransactionForm = ({ onClose, initialData }) => {
         const subtotal = Math.round((parseFloat(formData.quantity) || 0) * (parseFloat(formData.unitPrice) || 0));
         const vatPercentage = parseFloat(formData.vatPercentage) || 0;
         const vatAmount = Math.round(subtotal * (vatPercentage / 100));
-        const totalAmount = Math.round(subtotal + vatAmount);
+        const discountPercentage = parseFloat(formData.discountPercentage) || 0;
+        const discountAmount = Math.round(subtotal * (discountPercentage / 100));
+        const totalAmount = Math.round(subtotal + vatAmount - discountAmount);
 
         setFormData(prev => ({
             ...prev,
             vatAmount: vatAmount,
+            discountAmount: discountAmount,
             amount: totalAmount,
             subtotal: subtotal
         }));
-    }, [formData.quantity, formData.unitPrice, formData.vatPercentage]);
+    }, [formData.quantity, formData.unitPrice, formData.vatPercentage, formData.discountPercentage]);
 
     const formatDisplayNumber = (val) => {
         if (val === null || val === undefined || val === '') return '';
@@ -338,6 +343,39 @@ const TransactionForm = ({ onClose, initialData }) => {
                                 value={new Intl.NumberFormat('vi-VN').format(formData.amount)}
                                 readOnly
                                 className="readonly-amount highlight-total"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="form-row three-cols">
+                        <div className="form-group">
+                            <label>Giảm giá (%)</label>
+                            <input
+                                type="number"
+                                name="discountPercentage"
+                                value={formData.discountPercentage}
+                                onChange={handleChange}
+                                min="0"
+                                max="100"
+                                placeholder="0"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Số tiền giảm giá</label>
+                            <input
+                                type="text"
+                                value={new Intl.NumberFormat('vi-VN').format(formData.discountAmount)}
+                                readOnly
+                                className="readonly-amount discount-amount"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Thực thanh toán</label>
+                            <input
+                                type="text"
+                                value={new Intl.NumberFormat('vi-VN').format(formData.amount)}
+                                readOnly
+                                className="readonly-amount highlight-final"
                             />
                         </div>
                     </div>

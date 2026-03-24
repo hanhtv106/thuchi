@@ -51,6 +51,23 @@ const poolPromise = new sql.ConnectionPool(config)
     .then(async pool => {
         console.log('Connected to SQL Server');
         try {
+            // Migration: thêm cột discountPercentage và discountAmount nếu chưa có
+            await pool.request().query(`
+                IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Transactions' AND COLUMN_NAME = 'discountPercentage')
+                    ALTER TABLE Transactions ADD discountPercentage DECIMAL(18,2) DEFAULT 0;
+                IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Transactions' AND COLUMN_NAME = 'discountAmount')
+                    ALTER TABLE Transactions ADD discountAmount DECIMAL(18,2) DEFAULT 0;
+                IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Transactions' AND COLUMN_NAME = 'vatPercentage')
+                    ALTER TABLE Transactions ADD vatPercentage DECIMAL(18,2) DEFAULT 0;
+                IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Transactions' AND COLUMN_NAME = 'vatAmount')
+                    ALTER TABLE Transactions ADD vatAmount DECIMAL(18,2) DEFAULT 0;
+                IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Transactions' AND COLUMN_NAME = 'subtotal')
+                    ALTER TABLE Transactions ADD subtotal DECIMAL(18,2) DEFAULT 0;
+                IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Transactions' AND COLUMN_NAME = 'voucherCode')
+                    ALTER TABLE Transactions ADD voucherCode NVARCHAR(100) NULL;
+            `);
+            console.log('Migration: discount/vat columns OK.');
+
             await pool.request().query(`
                 IF NOT EXISTS (SELECT * FROM Roles WHERE id = 'admin') INSERT INTO Roles (id, name, description) VALUES ('admin', 'Quản trị viên', 'Quyền cao nhất');
                 IF NOT EXISTS (SELECT * FROM Roles WHERE id = 'user') INSERT INTO Roles (id, name, description) VALUES ('user', 'Nhân viên', 'Quyền cơ bản');
@@ -194,11 +211,19 @@ app.post('/api/transactions', async (req, res) => {
             .input('partnerId', sql.VarChar, tx.partnerId)
             .input('quantity', sql.Decimal(18, 2), tx.quantity || 1)
             .input('unitPrice', sql.Decimal(18, 2), tx.unitPrice || 0)
+            .input('subtotal', sql.Decimal(18, 2), tx.subtotal || 0)
+            .input('vatPercentage', sql.Decimal(18, 2), tx.vatPercentage || 0)
+            .input('vatAmount', sql.Decimal(18, 2), tx.vatAmount || 0)
+            .input('discountPercentage', sql.Decimal(18, 2), tx.discountPercentage || 0)
+            .input('discountAmount', sql.Decimal(18, 2), tx.discountAmount || 0)
+            .input('voucherCode', sql.NVarChar, tx.voucherCode || '')
             .input('receiver', sql.NVarChar, tx.receiver)
             .input('attachments', sql.NVarChar(sql.MAX), JSON.stringify(tx.attachments || []))
             .input('createdBy', sql.UniqueIdentifier, tx.createdBy)
-            .query(`INSERT INTO Transactions (date, type, amount, content, categoryId, unitId, partnerId, quantity, unitPrice, receiver, attachments, createdBy) 
-                    VALUES (@date, @type, @amount, @content, @categoryId, @unitId, @partnerId, @quantity, @unitPrice, @receiver, @attachments, @createdBy)`);
+            .query(`INSERT INTO Transactions 
+                    (date, type, amount, content, categoryId, unitId, partnerId, quantity, unitPrice, subtotal, vatPercentage, vatAmount, discountPercentage, discountAmount, voucherCode, receiver, attachments, createdBy) 
+                    VALUES 
+                    (@date, @type, @amount, @content, @categoryId, @unitId, @partnerId, @quantity, @unitPrice, @subtotal, @vatPercentage, @vatAmount, @discountPercentage, @discountAmount, @voucherCode, @receiver, @attachments, @createdBy)`);
         res.json({ message: 'Created' });
     } catch (err) {
         console.error('Error adding transaction:', err.message);
@@ -222,11 +247,21 @@ app.put('/api/transactions/:id', async (req, res) => {
             .input('status', sql.VarChar, tx.status)
             .input('quantity', sql.Decimal(18, 2), tx.quantity)
             .input('unitPrice', sql.Decimal(18, 2), tx.unitPrice)
+            .input('subtotal', sql.Decimal(18, 2), tx.subtotal || 0)
+            .input('vatPercentage', sql.Decimal(18, 2), tx.vatPercentage || 0)
+            .input('vatAmount', sql.Decimal(18, 2), tx.vatAmount || 0)
+            .input('discountPercentage', sql.Decimal(18, 2), tx.discountPercentage || 0)
+            .input('discountAmount', sql.Decimal(18, 2), tx.discountAmount || 0)
+            .input('voucherCode', sql.NVarChar, tx.voucherCode || '')
             .input('receiver', sql.NVarChar, tx.receiver)
             .input('attachments', sql.NVarChar(sql.MAX), JSON.stringify(tx.attachments || []))
-            .query(`UPDATE Transactions SET date = @date, type = @type, amount = @amount, content = @content, 
+            .query(`UPDATE Transactions SET 
+                    date = @date, type = @type, amount = @amount, content = @content, 
                     categoryId = @categoryId, unitId = @unitId, partnerId = @partnerId, status = @status, 
-                    quantity = @quantity, unitPrice = @unitPrice, receiver = @receiver, attachments = @attachments 
+                    quantity = @quantity, unitPrice = @unitPrice, subtotal = @subtotal,
+                    vatPercentage = @vatPercentage, vatAmount = @vatAmount,
+                    discountPercentage = @discountPercentage, discountAmount = @discountAmount,
+                    voucherCode = @voucherCode, receiver = @receiver, attachments = @attachments 
                     WHERE id = @id`);
         res.json({ message: 'Updated' });
     } catch (err) {
