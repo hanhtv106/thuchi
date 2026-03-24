@@ -93,6 +93,24 @@ export const MainLayout = () => {
                 </div>
             </aside>
 
+            {/* Application Bottom Navigation (Mobile Only) */}
+            <nav className="mobile-bottom-nav">
+                {filteredNavItems.map(item => {
+                    const Icon = item.icon;
+                    const isActive = location.pathname === item.path;
+                    return (
+                        <Link
+                            key={item.path}
+                            to={item.path}
+                            className={clsx('bottom-nav-item', { active: isActive })}
+                        >
+                            <Icon size={22} className="nav-icon" />
+                            <span className="nav-label">{item.label}</span>
+                        </Link>
+                    );
+                })}
+            </nav>
+
             {/* Overlay — only visible on mobile when sidebar open */}
             {isSidebarOpen && window.innerWidth < 768 && (
                 <div
@@ -110,6 +128,15 @@ export const MainLayout = () => {
                     <h1 className="page-title">
                         {NAV_ITEMS.find(i => i.path === location.pathname)?.label || 'Trang chủ'}
                     </h1>
+                    <div className="mobile-header-actions">
+                        <div className="mobile-user-info">
+                            <span className="mobile-user-role">{user?.role}</span>
+                            <span className="mobile-user-name" title={user?.fullName}>{user?.fullName?.split(' ').pop() || 'User'}</span>
+                        </div>
+                        <button onClick={logout} className="mobile-logout-btn" title="Đăng xuất">
+                            <LogOut size={18} />
+                        </button>
+                    </div>
                 </header>
                 <div className="content-area">
                     <Outlet />
