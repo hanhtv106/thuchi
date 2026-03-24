@@ -325,6 +325,7 @@ const TransactionForm = ({ onClose, initialData }) => {
                                 onChange={handleChange}
                                 min="0"
                                 max="100"
+                                step="0.01"
                             />
                         </div>
                         <div className="form-group">
@@ -357,6 +358,7 @@ const TransactionForm = ({ onClose, initialData }) => {
                                 onChange={handleChange}
                                 min="0"
                                 max="100"
+                                step="0.01"
                                 placeholder="0"
                             />
                         </div>
