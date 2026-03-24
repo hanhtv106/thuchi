@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { LayoutDashboard, Receipt, FileText, Settings, LogOut, User, Menu, X, ClipboardCheck, Shield } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import clsx from 'clsx';
 import './MainLayout.css';
 
@@ -11,7 +11,22 @@ export const MainLayout = () => {
     // Desktop: sidebar open by default; Mobile: closed by default
     const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 768);
 
-    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+    const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
+
+    // Auto close on mobile, reopen on desktop when resizing
+    const handleResize = useCallback(() => {
+        if (window.innerWidth < 768) {
+            setIsSidebarOpen(false);
+        } else {
+            setIsSidebarOpen(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        // WDG: passive listener for resize (performance)
+        window.addEventListener('resize', handleResize, { passive: true });
+        return () => window.removeEventListener('resize', handleResize);
+    }, [handleResize]);
 
     const NAV_ITEMS = [
         { label: 'Tổng quan', path: '/', icon: LayoutDashboard },
