@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import apiService from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 import { Trash2, Edit, Plus, User, Shield, Lock, Save } from 'lucide-react';
 import './AdminRBAC.css';
+
+// Avatar initials helper
+const initials = (name = '') => name.trim().split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
 
 const AdminRBAC = () => {
     const [activeTab, setActiveTab] = useState('users');
@@ -12,18 +15,13 @@ const AdminRBAC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const { showNotification } = useNotification();
 
-    // Form States
     const [isEditing, setIsEditing] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
     const [currentRole, setCurrentRole] = useState(null);
     const [formData, setFormData] = useState({});
-
-    // Role Permission State
     const [rolePermissions, setRolePermissions] = useState([]);
 
-    useEffect(() => {
-        loadData();
-    }, []);
+    useEffect(() => { loadData(); }, []);
 
     const loadData = async () => {
         setIsLoading(true);
@@ -33,9 +31,7 @@ const AdminRBAC = () => {
                 apiService.getAllRoles(),
                 apiService.getAllPermissions()
             ]);
-            setUsers(u);
-            setRoles(r);
-            setPermissions(p);
+            setUsers(u); setRoles(r); setPermissions(p);
         } catch (error) {
             console.error('Failed to load RBAC data', error);
         } finally {
@@ -43,147 +39,68 @@ const AdminRBAC = () => {
         }
     };
 
-    // --- User Handlers ---
+    // User handlers
     const handleAddUser = () => {
         setCurrentUser(null);
-        const defaultRole = roles.length > 0 ? roles[0].id : '';
-        setFormData({ username: '', email: '', password: '', fullName: '', role: defaultRole }); // Added username
+        setFormData({ username: '', email: '', password: '', fullName: '', role: roles[0]?.id || '' });
         setIsEditing(true);
     };
-
-    const handleEditUser = (user) => {
-        setCurrentUser(user);
-        setFormData({ ...user, password: '' }); // Không hiển thị mật khẩu cũ
-        setIsEditing(true);
-    };
-
+    const handleEditUser = (user) => { setCurrentUser(user); setFormData({ ...user, password: '' }); setIsEditing(true); };
     const handleSaveUser = async (e) => {
         e.preventDefault();
         try {
             if (currentUser) {
-                // Cập nhật: chỉ update password nếu có nhập
                 const updateData = { ...currentUser, ...formData };
                 if (!formData.password) delete updateData.password;
                 await apiService.updateUser(updateData.id, updateData);
-                showNotification('Cập nhật người dùng thành công!');
+                showNotification('Cáº­p nháº­t ngÆ°á»i dÃ¹ng thÃ nh cÃ´ng!');
             } else {
                 await apiService.addUser(formData);
-                showNotification('Thêm người dùng mới thành công!');
+                showNotification('ThÃªm ngÆ°á»i dÃ¹ng má»›i thÃ nh cÃ´ng!');
             }
-            setIsEditing(false);
-            loadData();
-        } catch (error) {
-            showNotification(error.message, 'error');
-        }
+            setIsEditing(false); loadData();
+        } catch (error) { showNotification(error.message, 'error'); }
     };
-
-    const handleDeleteUser = async (id) => {
-        console.log('DEBUG: RBAC - Click Delete User, id:', id);
+    const handleDeleteUser = (id) => {
         setTimeout(async () => {
-            if (window.confirm('Xóa người dùng này?')) {
-                console.log('DEBUG: RBAC - Confirm OK, deleting User:', id);
-                try {
-                    await apiService.deleteUser(id);
-                    console.log('DEBUG: RBAC - Delete User Success');
-                    showNotification('Đã xóa người dùng thành công');
-                    loadData();
-                } catch (error) {
-                    console.error('DEBUG: RBAC - Delete User Failed:', error);
-                    showNotification('Lỗi: ' + (error.response?.data?.error || error.message), 'error');
-                }
-            } else {
-                console.log('DEBUG: RBAC - Cancelled DELETE User');
-            }
+            if (!window.confirm('XÃ³a ngÆ°á»i dÃ¹ng nÃ y?')) return;
+            try { await apiService.deleteUser(id); showNotification('ÄÃ£ xÃ³a ngÆ°á»i dÃ¹ng'); loadData(); }
+            catch (error) { showNotification('Lá»—i: ' + (error.response?.data?.error || error.message), 'error'); }
         }, 0);
     };
 
-    // --- Role Handlers ---
-    const handleAddRole = () => {
-        setCurrentRole(null);
-        setFormData({ id: '', name: '', description: '' });
-        setRolePermissions([]);
-        setIsEditing(true);
-    };
-
+    // Role handlers
+    const handleAddRole = () => { setCurrentRole(null); setFormData({ id: '', name: '', description: '' }); setRolePermissions([]); setIsEditing(true); };
     const handleEditRole = async (role) => {
-        setCurrentRole(role);
-        setFormData({ ...role });
-
-        // Lấy permissions đã gán cho role này
+        setCurrentRole(role); setFormData({ ...role });
         const assignedIds = await apiService.getPermissionsByRole(role.id);
-        setRolePermissions(assignedIds);
-
-
-        setIsEditing(true);
+        setRolePermissions(assignedIds); setIsEditing(true);
     };
-
     const handleSaveRole = async (e) => {
         e.preventDefault();
         try {
-            if (currentRole) {
-                await apiService.updateRole(formData.id, formData);
-            } else {
-                await apiService.addRole(formData);
-            }
-
-            // Lưu Permissions
+            if (currentRole) { await apiService.updateRole(formData.id, formData); }
+            else { await apiService.addRole(formData); }
             const roleId = currentRole ? currentRole.id : formData.id;
             await apiService.updateRolePermissions(roleId, rolePermissions);
-
-            showNotification('Lưu vai trò thành công!');
-            setIsEditing(false);
-            loadData();
-        } catch (error) {
-            showNotification('Lỗi: ' + error.message, 'error');
-        }
+            showNotification('LÆ°u vai trÃ² thÃ nh cÃ´ng!'); setIsEditing(false); loadData();
+        } catch (error) { showNotification('Lá»—i: ' + error.message, 'error'); }
     };
-
-    const handleDeleteRole = async (id) => {
-        if (id === 'admin') {
-            showNotification('Không thể xóa vai trò Admin hệ thống', 'error');
-            return;
-        }
-        console.log('DEBUG: RBAC - Click Delete Role, id:', id);
+    const handleDeleteRole = (id) => {
+        if (id === 'admin') { showNotification('KhÃ´ng thá»ƒ xÃ³a vai trÃ² Admin há»‡ thá»‘ng', 'error'); return; }
         setTimeout(async () => {
-            if (window.confirm('Xóa vai trò này?')) {
-                console.log('DEBUG: RBAC - Confirm OK, deleting Role:', id);
-                try {
-                    await apiService.deleteRole(id);
-                    console.log('DEBUG: RBAC - Delete Role Success');
-                    showNotification('Đã xóa vai trò thành công');
-                    loadData();
-                } catch (error) {
-                    console.error('DEBUG: RBAC - Delete Role Failed:', error);
-                    showNotification('Lỗi: ' + (error.response?.data?.error || error.message), 'error');
-                }
-            } else {
-                console.log('DEBUG: RBAC - Cancelled DELETE Role');
-            }
+            if (!window.confirm('XÃ³a vai trÃ² nÃ y?')) return;
+            try { await apiService.deleteRole(id); showNotification('ÄÃ£ xÃ³a vai trÃ²'); loadData(); }
+            catch (error) { showNotification('Lá»—i: ' + (error.response?.data?.error || error.message), 'error'); }
         }, 0);
     };
+    const togglePermission = (permId) =>
+        setRolePermissions(prev => prev.includes(permId) ? prev.filter(id => id !== permId) : [...prev, permId]);
 
-    const togglePermission = (permId) => {
-        setRolePermissions(prev => {
-            if (prev.includes(permId)) {
-                return prev.filter(id => id !== permId);
-            } else {
-                return [...prev, permId];
-            }
-        });
-    };
-
-    // Group permissions by 'group' field
-    const GROUP_ICONS = {
-        'Giao dịch': '📊',
-        'Tất toán': '💰',
-        'Báo cáo': '📈',
-        'Dữ liệu nguồn': '📁',
-        'Hệ thống': '⚙️',
-    };
-
+    const GROUP_ICONS = { 'Giao dá»‹ch': 'ðŸ“Š', 'Táº¥t toÃ¡n': 'ðŸ’°', 'BÃ¡o cÃ¡o': 'ðŸ“ˆ', 'Dá»¯ liá»‡u nguá»“n': 'ðŸ“', 'Há»‡ thá»‘ng': 'âš™ï¸' };
     const groupedPermissions = permissions.reduce((acc, curr) => {
-        const groupName = curr.group || 'Khác';
-        const displayName = `${GROUP_ICONS[groupName] || '🔒'} ${groupName}`;
+        const groupName = curr.group || 'KhÃ¡c';
+        const displayName = `${GROUP_ICONS[groupName] || 'ðŸ”’'} ${groupName}`;
         if (!acc[displayName]) acc[displayName] = [];
         acc[displayName].push(curr);
         return acc;
@@ -193,31 +110,34 @@ const AdminRBAC = () => {
         <button
             className={`tab-btn ${activeTab === name ? 'active' : ''}`}
             onClick={() => { setActiveTab(name); setIsEditing(false); }}
+            aria-current={activeTab === name ? 'page' : undefined}
         >
-            <Icon size={18} /> {label}
+            <Icon size={16} aria-hidden="true" /> {label}
         </button>
     );
 
-    if (isLoading) return <div style={{ padding: '2rem' }}>Đang tải...</div>;
+    if (isLoading) return <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Äang táº£i...</div>;
 
     return (
         <div className="rbac-page">
-            <h1 className="page-title">Quản trị Hệ thống</h1>
+            <h1 className="page-title">Quáº£n trá»‹ Há»‡ thá»‘ng</h1>
 
             <div className="tabs-container">
-                <NavTab name="users" label="Người dùng" icon={User} />
-                <NavTab name="roles" label="Vai trò" icon={Shield} />
-                <NavTab name="permissions" label="Quyền hạn" icon={Lock} />
+                <NavTab name="users"       label="NgÆ°á»i dÃ¹ng" icon={User}   />
+                <NavTab name="roles"       label="Vai trÃ²"    icon={Shield} />
+                <NavTab name="permissions" label="Quyá»n háº¡n"  icon={Lock}   />
             </div>
 
             <div className="tab-content">
+
+                {/* â•â• USERS TAB â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
                 {activeTab === 'users' && (
                     <div className="rbac-section">
                         <div className="section-header">
-                            <h2>Danh sách Người dùng</h2>
+                            <h2>Danh sÃ¡ch NgÆ°á»i dÃ¹ng</h2>
                             {!isEditing && (
-                                <button onClick={handleAddUser} className="btn btn-primary">
-                                    <Plus size={16} /> Thêm người dùng
+                                <button onClick={handleAddUser} className="btn btn-primary" aria-label="ThÃªm ngÆ°á»i dÃ¹ng">
+                                    <Plus size={15} aria-hidden="true" /> ThÃªm
                                 </button>
                             )}
                         </div>
@@ -225,102 +145,95 @@ const AdminRBAC = () => {
                         {isEditing ? (
                             <form onSubmit={handleSaveUser} className="rbac-form">
                                 <div className="form-group">
-                                    <label>Tên đăng nhập</label>
-                                    <input
-                                        type="text"
-                                        value={formData.username || ''}
-                                        onChange={e => setFormData({ ...formData, username: e.target.value })}
-                                        required
-                                        placeholder="user123"
-                                    />
+                                    <label>TÃªn Ä‘Äƒng nháº­p</label>
+                                    <input type="text" value={formData.username || ''} onChange={e => setFormData({ ...formData, username: e.target.value })} required placeholder="user123" />
                                 </div>
                                 <div className="form-group">
-                                    <label>Email (Bắt buộc)</label>
-                                    <input
-                                        type="email"
-                                        value={formData.email || ''}
-                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                        required
-                                        placeholder="user@gmail.com"
-                                    />
-                                </div>
-
-                                <div className="form-group">
-                                    <label>Mật khẩu</label>
-                                    <input
-                                        type="password"
-                                        value={formData.password || ''}
-                                        onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                        required={!currentUser}
-                                        placeholder={currentUser ? 'Để trống nếu không đổi' : ''}
-                                    />
+                                    <label>Email</label>
+                                    <input type="email" value={formData.email || ''} onChange={e => setFormData({ ...formData, email: e.target.value })} required placeholder="user@gmail.com" />
                                 </div>
                                 <div className="form-group">
-                                    <label>Họ tên</label>
-                                    <input
-                                        value={formData.fullName || ''}
-                                        onChange={e => setFormData({ ...formData, fullName: e.target.value })}
-                                        required
-                                    />
+                                    <label>Máº­t kháº©u</label>
+                                    <input type="password" value={formData.password || ''} onChange={e => setFormData({ ...formData, password: e.target.value })} required={!currentUser} placeholder={currentUser ? 'Äá»ƒ trá»‘ng náº¿u khÃ´ng Ä‘á»•i' : ''} />
                                 </div>
                                 <div className="form-group">
-                                    <label>Vai trò</label>
-                                    <select
-                                        value={formData.role || ''}
-                                        onChange={e => setFormData({ ...formData, role: e.target.value })}
-                                    >
-                                        {roles.map(r => (
-                                            <option key={r.id} value={r.id}>{r.name}</option>
-                                        ))}
+                                    <label>Há» tÃªn</label>
+                                    <input value={formData.fullName || ''} onChange={e => setFormData({ ...formData, fullName: e.target.value })} required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Vai trÃ²</label>
+                                    <select value={formData.role || ''} onChange={e => setFormData({ ...formData, role: e.target.value })}>
+                                        {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                                     </select>
                                 </div>
                                 <div className="form-actions">
-                                    <button type="button" onClick={() => setIsEditing(false)} className="btn-secondary">Hủy</button>
-                                    <button type="submit" className="btn-primary"><Save size={16} /> Lưu</button>
+                                    <button type="button" onClick={() => setIsEditing(false)} className="btn-secondary">Há»§y</button>
+                                    <button type="submit" className="btn-primary"><Save size={15} aria-hidden="true" /> LÆ°u</button>
                                 </div>
                             </form>
                         ) : (
-                            <table className="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Tên đăng nhập</th>
-                                        <th>Email</th>
-                                        <th>Họ tên</th>
-                                        <th>Vai trò</th>
-                                        <th>Hành động</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                            <>
+                                {/* Mobile Card List */}
+                                <div className="rbac-card-list" role="list">
+                                    {users.length === 0 && <p className="text-center">ChÆ°a cÃ³ ngÆ°á»i dÃ¹ng nÃ o</p>}
                                     {users.map(u => (
-                                        <tr key={u.id}>
-                                            <td>{u.username}</td>
-                                            <td>{u.email}</td>
-                                            <td>{u.fullName}</td>
-                                            <td>
-                                                <span className="role-badge">{roles.find(r => r.id === u.role)?.name || u.role}</span>
-                                            </td>
-                                            <td>
-                                                <button onClick={() => handleEditUser(u)} className="btn-icon-action"><Edit size={16} /></button>
-                                                <button onClick={() => handleDeleteUser(u.id)} className="btn-icon-action text-red"><Trash2 size={16} /></button>
-                                            </td>
-                                        </tr>
+                                        <div key={u.id} className="rbac-user-card" role="listitem">
+                                            <div className="rbac-user-avatar" aria-hidden="true">{initials(u.fullName)}</div>
+                                            <div className="rbac-user-info">
+                                                <span className="rbac-user-name">{u.fullName || u.username}</span>
+                                                <span className="rbac-user-email">{u.email}</span>
+                                                <div className="rbac-user-meta">
+                                                    <span className="role-badge">{roles.find(r => r.id === u.role)?.name || u.role}</span>
+                                                </div>
+                                            </div>
+                                            <div className="rbac-card-actions">
+                                                <button onClick={() => handleEditUser(u)} className="btn-icon-action" aria-label={`Sá»­a ${u.fullName}`} title="Sá»­a"><Edit size={16} /></button>
+                                                <button onClick={() => handleDeleteUser(u.id)} className="btn-icon-action text-red" aria-label={`XÃ³a ${u.fullName}`} title="XÃ³a"><Trash2 size={16} /></button>
+                                            </div>
+                                        </div>
                                     ))}
-                                    {users.length === 0 && (
-                                        <tr><td colSpan="5" className="text-center">Chưa có người dùng nào</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                </div>
+
+                                {/* Desktop Table */}
+                                <table className="rbac-desktop-table" aria-label="Danh sÃ¡ch ngÆ°á»i dÃ¹ng">
+                                    <thead>
+                                        <tr>
+                                            <th>TÃªn Ä‘Äƒng nháº­p</th>
+                                            <th>Email</th>
+                                            <th>Há» tÃªn</th>
+                                            <th>Vai trÃ²</th>
+                                            <th style={{ width: '90px' }}>HÃ nh Ä‘á»™ng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {users.map(u => (
+                                            <tr key={u.id}>
+                                                <td>{u.username}</td>
+                                                <td>{u.email}</td>
+                                                <td>{u.fullName}</td>
+                                                <td><span className="role-badge">{roles.find(r => r.id === u.role)?.name || u.role}</span></td>
+                                                <td style={{ display: 'flex', gap: '4px' }}>
+                                                    <button onClick={() => handleEditUser(u)} className="btn-icon-action" aria-label={`Sá»­a ${u.fullName}`} title="Sá»­a"><Edit size={15} /></button>
+                                                    <button onClick={() => handleDeleteUser(u.id)} className="btn-icon-action text-red" aria-label={`XÃ³a ${u.fullName}`} title="XÃ³a"><Trash2 size={15} /></button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {users.length === 0 && <tr><td colSpan="5" className="text-center">ChÆ°a cÃ³ ngÆ°á»i dÃ¹ng nÃ o</td></tr>}
+                                    </tbody>
+                                </table>
+                            </>
                         )}
                     </div>
                 )}
 
+                {/* â•â• ROLES TAB â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
                 {activeTab === 'roles' && (
                     <div className="rbac-section">
                         <div className="section-header">
-                            <h2>Danh sách Vai trò</h2>
+                            <h2>Danh sÃ¡ch Vai trÃ²</h2>
                             {!isEditing && (
-                                <button onClick={handleAddRole} className="btn btn-primary">
-                                    <Plus size={16} /> Thêm vai trò
+                                <button onClick={handleAddRole} className="btn btn-primary" aria-label="ThÃªm vai trÃ²">
+                                    <Plus size={15} aria-hidden="true" /> ThÃªm
                                 </button>
                             )}
                         </div>
@@ -329,45 +242,28 @@ const AdminRBAC = () => {
                             <form onSubmit={handleSaveRole} className="rbac-form role-form">
                                 <div className="role-basic-info">
                                     <div className="form-group">
-                                        <label>Mã vai trò (ID)</label>
-                                        <input
-                                            value={formData.id || ''}
-                                            onChange={e => setFormData({ ...formData, id: e.target.value })}
-                                            required
-                                            disabled={!!currentRole}
-                                        />
+                                        <label>MÃ£ vai trÃ² (ID)</label>
+                                        <input value={formData.id || ''} onChange={e => setFormData({ ...formData, id: e.target.value })} required disabled={!!currentRole} />
                                     </div>
                                     <div className="form-group">
-                                        <label>Tên vai trò</label>
-                                        <input
-                                            value={formData.name || ''}
-                                            onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                            required
-                                        />
+                                        <label>TÃªn vai trÃ²</label>
+                                        <input value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
                                     </div>
                                     <div className="form-group">
-                                        <label>Mô tả</label>
-                                        <textarea
-                                            value={formData.description || ''}
-                                            onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                            rows={2}
-                                        />
+                                        <label>MÃ´ táº£</label>
+                                        <textarea value={formData.description || ''} onChange={e => setFormData({ ...formData, description: e.target.value })} rows={2} />
                                     </div>
                                 </div>
 
                                 <div className="permission-selector">
-                                    <h3>Phân quyền</h3>
+                                    <h3>PhÃ¢n quyá»n</h3>
                                     <div className="permissions-grid">
                                         {Object.entries(groupedPermissions).map(([group, perms]) => (
                                             <div key={group} className="permission-group">
                                                 <h4>{group}</h4>
                                                 {perms.map(p => (
                                                     <label key={p.id} className="permission-item">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={rolePermissions.includes(p.id)}
-                                                            onChange={() => togglePermission(p.id)}
-                                                        />
+                                                        <input type="checkbox" checked={rolePermissions.includes(p.id)} onChange={() => togglePermission(p.id)} />
                                                         <span>{p.name}</span>
                                                     </label>
                                                 ))}
@@ -377,50 +273,85 @@ const AdminRBAC = () => {
                                 </div>
 
                                 <div className="form-actions">
-                                    <button type="button" onClick={() => setIsEditing(false)} className="btn-secondary">Hủy</button>
-                                    <button type="submit" className="btn-primary"><Save size={16} /> Lưu</button>
+                                    <button type="button" onClick={() => setIsEditing(false)} className="btn-secondary">Há»§y</button>
+                                    <button type="submit" className="btn-primary"><Save size={15} aria-hidden="true" /> LÆ°u</button>
                                 </div>
                             </form>
                         ) : (
-                            <table className="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Tên vai trò</th>
-                                        <th>Mô tả</th>
-                                        <th>Hành động</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                            <>
+                                {/* Mobile Card */}
+                                <div className="rbac-card-list" role="list">
                                     {roles.map(r => (
-                                        <tr key={r.id}>
-                                            <td>{r.id}</td>
-                                            <td>{r.name}</td>
-                                            <td>{r.description}</td>
-                                            <td>
-                                                <button onClick={() => handleEditRole(r)} className="btn-icon-action"><Edit size={16} /></button>
-                                                <button onClick={() => handleDeleteRole(r.id)} className="btn-icon-action text-red"><Trash2 size={16} /></button>
-                                            </td>
-                                        </tr>
+                                        <div key={r.id} className="rbac-user-card" role="listitem">
+                                            <div className="rbac-user-info">
+                                                <span className="rbac-user-name">{r.name}</span>
+                                                <span className="rbac-user-email">{r.id}</span>
+                                                {r.description && <span className="rbac-user-email">{r.description}</span>}
+                                            </div>
+                                            <div className="rbac-card-actions">
+                                                <button onClick={() => handleEditRole(r)} className="btn-icon-action" aria-label={`Sá»­a ${r.name}`} title="Sá»­a"><Edit size={16} /></button>
+                                                <button onClick={() => handleDeleteRole(r.id)} className="btn-icon-action text-red" aria-label={`XÃ³a ${r.name}`} title="XÃ³a"><Trash2 size={16} /></button>
+                                            </div>
+                                        </div>
                                     ))}
-                                </tbody>
-                            </table>
+                                </div>
+
+                                {/* Desktop Table */}
+                                <table className="rbac-desktop-table" aria-label="Danh sÃ¡ch vai trÃ²">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th><th>TÃªn vai trÃ²</th><th>MÃ´ táº£</th><th style={{ width: '90px' }}>HÃ nh Ä‘á»™ng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {roles.map(r => (
+                                            <tr key={r.id}>
+                                                <td><code>{r.id}</code></td>
+                                                <td>{r.name}</td>
+                                                <td>{r.description}</td>
+                                                <td style={{ display: 'flex', gap: '4px' }}>
+                                                    <button onClick={() => handleEditRole(r)} className="btn-icon-action" title="Sá»­a"><Edit size={15} /></button>
+                                                    <button onClick={() => handleDeleteRole(r.id)} className="btn-icon-action text-red" title="XÃ³a"><Trash2 size={15} /></button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </>
                         )}
                     </div>
                 )}
 
+                {/* â•â• PERMISSIONS TAB â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
                 {activeTab === 'permissions' && (
                     <div className="rbac-section">
                         <div className="section-header">
-                            <h2>Danh sách Quyền hạn (Hệ thống)</h2>
+                            <h2>Danh sÃ¡ch Quyá»n háº¡n (Há»‡ thá»‘ng)</h2>
                         </div>
-                        <table className="data-table">
+
+                        {/* Mobile: group cards */}
+                        <div className="rbac-card-list" role="list">
+                            {Object.entries(groupedPermissions).map(([group, perms]) => (
+                                <div key={group}>
+                                    <div style={{ padding: '0.5rem 1rem', background: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
+                                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{group}</span>
+                                    </div>
+                                    {perms.map(p => (
+                                        <div key={p.id} className="rbac-user-card" role="listitem">
+                                            <div className="rbac-user-info">
+                                                <span className="rbac-user-name">{p.name}</span>
+                                                <code style={{ fontSize: '0.7rem', background: '#f1f5f9', color: '#475569', padding: '0.1rem 0.35rem', borderRadius: '4px', fontFamily: 'monospace', width: 'fit-content' }}>{p.code}</code>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Desktop table */}
+                        <table className="rbac-desktop-table" aria-label="Danh sÃ¡ch quyá»n háº¡n">
                             <thead>
-                                <tr>
-                                    <th>Mã quyền</th>
-                                    <th>Tên quyền</th>
-                                    <th>Nhóm</th>
-                                </tr>
+                                <tr><th>MÃ£ quyá»n</th><th>TÃªn quyá»n</th><th>NhÃ³m</th></tr>
                             </thead>
                             <tbody>
                                 {permissions.map(p => (
@@ -440,3 +371,4 @@ const AdminRBAC = () => {
 };
 
 export default AdminRBAC;
+
