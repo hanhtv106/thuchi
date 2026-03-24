@@ -91,18 +91,23 @@ const Reports = () => {
     return (
         <div className="reports-page">
             <div className="filters-bar">
-                <select value={filterType} onChange={e => setFilterType(e.target.value)}>
-                    <option value="all">Tất cả</option>
-                    <option value="income">Thu</option>
-                    <option value="expense">Chi</option>
-                </select>
-                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
-                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                <div className="filter-inputs">
+                    <select value={filterType} onChange={e => setFilterType(e.target.value)} className="filter-select">
+                        <option value="all">Tất cả giao dịch</option>
+                        <option value="income">Chỉ hiển thị Thu</option>
+                        <option value="expense">Chỉ hiển thị Chi</option>
+                    </select>
+                    <div className="date-range-filter">
+                        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} title="Từ ngày" />
+                        <span className="date-separator">-</span>
+                        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} title="Đến ngày" />
+                    </div>
+                </div>
 
                 <div className="export-actions">
-                    <button onClick={handleExportExcel} className="btn-outline" title="Xuất Excel"><FileDown size={20} /></button>
-                    <button onClick={handleExportPDF} className="btn-outline" title="Báo cáo PDF (Bảng)"><Printer size={20} /></button>
-                    <button onClick={handleProfessionalPrint} className="btn-primary" title="Báo cáo chuyên nghiệp"><FileText size={20} /> In Giải Chi</button>
+                    <button onClick={handleExportExcel} className="btn-outline btn-icon-action" title="Xuất Excel"><FileDown size={20} /> <span className="hide-on-mobile">Excel</span></button>
+                    <button onClick={handleExportPDF} className="btn-outline btn-icon-action" title="Báo cáo PDF (Bảng)"><Printer size={20} /> <span className="hide-on-mobile">PDF</span></button>
+                    <button onClick={handleProfessionalPrint} className="btn-primary" title="Báo cáo chuyên nghiệp"><FileText size={20} /> <span>IN GIẢI CHI</span></button>
                 </div>
             </div>
 
