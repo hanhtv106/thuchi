@@ -130,8 +130,57 @@ const Reports = () => {
                 </div>
             </div>
 
-            <div className="report-details card">
+            <div className="report-details card" style={{ paddingBottom: '1.5rem' }}>
                 <h4>Chi tiết giao dịch</h4>
+
+                {/* Mobile View */}
+                <div className="reports-card-list" role="list">
+                    {filteredData.length > 0 ? (
+                        [...filteredData].sort((a, b) => new Date(b.date) - new Date(a.date)).map(tx => (
+                            <div key={tx.id} 
+                                className={`reports-card ${tx.attachments?.length > 0 ? 'clickable-row' : ''}`}
+                                onClick={() => { if(tx.attachments?.length > 0) setSelectedAttachments(tx.attachments); }}
+                                role="listitem"
+                            >
+                                <div className="reports-card-header">
+                                    <div className="reports-card-meta">
+                                        <span className="reports-card-date">{new Intl.DateTimeFormat('vi-VN').format(new Date(tx.date))}</span>
+                                        {tx.voucherCode && <span className="reports-card-voucher">#{tx.voucherCode}</span>}
+                                    </div>
+                                    <span className={`badge ${tx.type}`}>
+                                        {tx.type === 'income' ? 'Thu' : 'Chi'}
+                                    </span>
+                                </div>
+                                <div className="reports-card-body">
+                                    <div className="reports-card-content">{tx.content}</div>
+                                    <div className="reports-card-sub">
+                                        <span>{categories.find(c => c.id === tx.categoryId)?.name || tx.categoryId}</span>
+                                        <span> &bull; </span>
+                                        <span>{partners.find(p => p.id === tx.partnerId)?.name || tx.partner || tx.receiver || '-'}</span>
+                                    </div>
+                                </div>
+                                <div className="reports-card-footer">
+                                    <span className={`reports-card-amount ${tx.type === 'income' ? 'text-green' : 'text-red'}`}>
+                                        {new Intl.NumberFormat('vi-VN').format(tx.amount)}
+                                    </span>
+                                    {tx.attachments?.length > 0 && (
+                                        <button
+                                            className="btn-view-att"
+                                            onClick={(e) => { e.stopPropagation(); setSelectedAttachments(tx.attachments); }}
+                                            title={`Xem ${tx.attachments.length} chứng từ`}
+                                        >
+                                            <Paperclip size={18} /> <span className="att-count">{tx.attachments.length}</span>
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="reports-card-empty">Không có dữ liệu trong khoảng thời gian này</div>
+                    )}
+                </div>
+
+                {/* Desktop View */}
                 <div className="table-responsive">
                     <table className="reports-table">
                         <thead>
