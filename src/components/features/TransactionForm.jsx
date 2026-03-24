@@ -264,7 +264,7 @@ const TransactionForm = ({ onClose, initialData }) => {
                             </div>
                         </div>
                         <div className="form-group">
-                            <label>Ngày</label>
+                            <label>Ngày <span style={{ fontWeight: 'normal', color: '#6b7280', fontSize: '0.85em' }}>(DD/MM/YYYY)</span></label>
                             <input type="date" name="date" value={formData.date} onChange={handleChange} required />
                         </div>
                     </div>
