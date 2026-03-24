@@ -1,12 +1,10 @@
 /* ─── TransactionList.css ──────────────────────────────────────────────────── */
 
-/* Layout */
+/* Layout — no border/shadow (parent .tx-table-section handles it) */
 .transaction-list {
   overflow-x: auto;
-  margin-top: 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  /* Smooth scroll on iOS */
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Table */
@@ -25,7 +23,13 @@
   text-align: left;
   border-bottom: 2px solid #e2e8f0;
   white-space: nowrap;
-  font-variant-numeric: tabular-nums; /* WDG: tabular-nums for number cols */
+  font-variant-numeric: tabular-nums;
+  /* Sticky header */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  /* Subtle gradient header */
+  background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
 }
 
 .data-table td {
@@ -35,9 +39,14 @@
   color: #1e293b;
 }
 
-/* Hover state — WDG: buttons/rows need hover visual feedback */
+/* Row hover — animated, not just background */
 .data-table tr:hover td {
   background-color: #f8fafc;
+}
+
+/* Row entry animation */
+.data-table tbody tr {
+  transition: background-color 0.12s ease;
 }
 
 /* Row status tinting */
