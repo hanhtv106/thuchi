@@ -8,7 +8,8 @@ import './MainLayout.css';
 export const MainLayout = () => {
     const { user, logout, hasPermission } = useAuth();
     const location = useLocation();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    // Desktop: sidebar open by default; Mobile: closed by default
+    const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 768);
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -77,8 +78,14 @@ export const MainLayout = () => {
                 </div>
             </aside>
 
-            {/* Sidebar Overlay for Mobile */}
-            <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)}></div>
+            {/* Overlay — only visible on mobile when sidebar open */}
+            {isSidebarOpen && window.innerWidth < 768 && (
+                <div
+                    className="sidebar-overlay"
+                    onClick={() => setIsSidebarOpen(false)}
+                    aria-hidden="true"
+                />
+            )}
 
             <main className="main-content">
                 <header className="top-header">

@@ -195,17 +195,21 @@
 .logout-btn:hover         { background: #fef2f2; border-color: #fca5a5; }
 .logout-btn:focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--danger); }
 
-/* ── Overlay ────────────────────────────────────────────────── */
+/* ── Overlay — React renders conditionally, CSS just styles ─── */
 .sidebar-overlay {
-  display: none; /* hidden by default */
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
-  z-index: 199; /* just below sidebar */
+  z-index: 199;
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
+  animation: overlayIn 0.2s ease;
 }
-.sidebar.open ~ .sidebar-overlay { display: block; }
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 
 /* ── Main content ───────────────────────────────────────────── */
 .main-content {
@@ -282,6 +286,7 @@
   }
 
   .sidebar.open { width: 260px; }
+  .sidebar.closed { width: 64px; }
 
   .mobile-menu-toggle { display: none; }
 
