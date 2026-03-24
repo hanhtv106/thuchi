@@ -149,7 +149,10 @@ const Reports = () => {
                         <tbody>
                             {filteredData.length > 0 ? (
                                 [...filteredData].sort((a, b) => new Date(b.date) - new Date(a.date)).map(tx => (
-                                    <tr key={tx.id} className={tx.type === 'income' ? 'row-income' : 'row-expense'}>
+                                    <tr key={tx.id} 
+                                        className={`${tx.type === 'income' ? 'row-income' : 'row-expense'} ${tx.attachments?.length > 0 ? 'clickable-row' : ''}`}
+                                        onClick={() => { if(tx.attachments?.length > 0) setSelectedAttachments(tx.attachments); }}
+                                    >
                                         <td>{new Intl.DateTimeFormat('vi-VN').format(new Date(tx.date))}</td>
                                         <td className="type-cell">
                                             <span className={`badge ${tx.type}`}>
@@ -167,7 +170,7 @@ const Reports = () => {
                                             {tx.attachments?.length > 0 ? (
                                                 <button
                                                     className="btn-view-att"
-                                                    onClick={() => setSelectedAttachments(tx.attachments)}
+                                                    onClick={(e) => { e.stopPropagation(); setSelectedAttachments(tx.attachments); }}
                                                     title={`Xem ${tx.attachments.length} chứng từ`}
                                                 >
                                                     <Paperclip size={18} />

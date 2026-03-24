@@ -130,7 +130,13 @@ const SettlementPage = () => {
                     </thead>
                     <tbody>
                         {filteredTransactions.map(tx => (
-                            <tr key={tx.id}>
+                            <tr key={tx.id} 
+                                className={hasPermission('SETTLEMENT_MANAGE') ? "clickable-row" : ""} 
+                                onClick={() => {
+                                    if(hasPermission('SETTLEMENT_MANAGE')) {
+                                        settlementStatus === 'unsettled' ? handleSettle(tx.id) : handleUnsettle(tx.id);
+                                    }
+                                }}>
                                 <td>{format(new Date(tx.date), 'dd/MM/yyyy')}</td>
                                 <td>
                                     <span className={`badge ${tx.type}`}>
@@ -152,7 +158,7 @@ const SettlementPage = () => {
                                     <td>
                                         {settlementStatus === 'unsettled' ? (
                                             <button
-                                                onClick={() => handleSettle(tx.id)}
+                                                onClick={(e) => { e.stopPropagation(); handleSettle(tx.id); }}
                                                 className="btn btn-primary btn-sm"
                                                 title="Đánh dấu đã tất toán"
                                             >
@@ -160,7 +166,7 @@ const SettlementPage = () => {
                                             </button>
                                         ) : (
                                             <button
-                                                onClick={() => handleUnsettle(tx.id)}
+                                                onClick={(e) => { e.stopPropagation(); handleUnsettle(tx.id); }}
                                                 className="btn btn-secondary btn-sm text-red"
                                                 title="Hủy tất toán"
                                             >

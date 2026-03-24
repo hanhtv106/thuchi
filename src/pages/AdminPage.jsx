@@ -67,15 +67,15 @@ const AdminPage = () => {
                         </thead>
                         <tbody>
                             {deletedTransactions.map(tx => (
-                                <tr key={tx.id}>
+                                <tr key={tx.id} className="clickable-row" onClick={() => handleRestore(tx.id)}>
                                     <td>{tx.deletedAt ? format(new Date(tx.deletedAt), 'dd/MM/yyyy HH:mm') : 'N/A'}</td>
                                     <td>{tx.content}</td>
                                     <td>{new Intl.NumberFormat('vi-VN').format(tx.amount)}</td>
                                     <td style={{ display: 'flex', gap: '0.5rem' }}>
-                                        <button onClick={() => handleRestore(tx.id)} className="btn-icon text-green" title="Khôi phục">
+                                        <button onClick={(e) => { e.stopPropagation(); handleRestore(tx.id); }} className="btn-icon text-green" title="Khôi phục">
                                             <RefreshCcw size={18} />
                                         </button>
-                                        <button onClick={() => handleHardDelete(tx.id)} className="btn-icon text-red" title="Xóa vĩnh viễn">
+                                        <button onClick={(e) => { e.stopPropagation(); handleHardDelete(tx.id); }} className="btn-icon text-red" title="Xóa vĩnh viễn">
                                             <Trash2 size={18} />
                                         </button>
                                     </td>

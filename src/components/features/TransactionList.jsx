@@ -49,31 +49,31 @@ const Actions = memo(({ tx, onEdit, onDelete, onApprove, onReject, onRevoke, can
     return (
         <div className="actions-cell">
             {canModify && (
-                <button onClick={() => onEdit(tx)} className="btn-icon btn-icon--blue" aria-label="Sửa phiếu" title="Sửa">
+                <button onClick={(e) => { e.stopPropagation(); onEdit(tx); }} className="btn-icon btn-icon--blue" aria-label="Sửa phiếu" title="Sửa">
                     <Edit size={16} aria-hidden="true" />
                 </button>
             )}
             {canDelete && canModify && (
-                <button onClick={() => onDelete(tx.id)} className="btn-icon btn-icon--red" aria-label="Xóa phiếu" title="Xóa">
+                <button onClick={(e) => { e.stopPropagation(); onDelete(tx.id); }} className="btn-icon btn-icon--red" aria-label="Xóa phiếu" title="Xóa">
                     <Trash2 size={16} aria-hidden="true" />
                 </button>
             )}
-            <button onClick={() => printVoucher(tx)} className="btn-icon btn-icon--gray" aria-label="In phiếu" title="In">
+            <button onClick={(e) => { e.stopPropagation(); printVoucher(tx); }} className="btn-icon btn-icon--gray" aria-label="In phiếu" title="In">
                 <Printer size={16} aria-hidden="true" />
             </button>
             {canApprove && tx.status === 'pending' && (
                 <>
-                    <button onClick={() => onApprove(tx.id)} className="btn-icon btn-icon--green" aria-label="Duyệt phiếu" title="Duyệt">
+                    <button onClick={(e) => { e.stopPropagation(); onApprove(tx.id); }} className="btn-icon btn-icon--green" aria-label="Duyệt phiếu" title="Duyệt">
                         <CheckCircle size={16} aria-hidden="true" />
                     </button>
-                    <button onClick={() => onReject(tx.id)} className="btn-icon btn-icon--orange" aria-label="Từ chối" title="Từ chối">
+                    <button onClick={(e) => { e.stopPropagation(); onReject(tx.id); }} className="btn-icon btn-icon--orange" aria-label="Từ chối" title="Từ chối">
                         <XCircle size={16} aria-hidden="true" />
                     </button>
                 </>
             )}
             {canApprove && (tx.status === 'approved' || tx.status === 'rejected') && (
                 <button
-                    onClick={() => onRevoke(tx.id, tx.status)}
+                    onClick={(e) => { e.stopPropagation(); onRevoke(tx.id, tx.status); }}
                     className="btn-icon btn-icon--orange"
                     aria-label={tx.status === 'approved' ? 'Hủy duyệt' : 'Hủy từ chối'}
                     title={tx.status === 'approved' ? 'Hủy duyệt' : 'Hủy từ chối'}
@@ -88,7 +88,11 @@ Actions.displayName = 'Actions';
 
 // ─── MOBILE: Card view ─────────────────────────────────────────
 const TxCard = memo(({ tx, categoryName, partnerName, actionProps }) => (
-    <article className={`tx-card tx-card--${tx.status}`} aria-label={`Giao dịch: ${tx.content}`}>
+    <article 
+        className={`tx-card tx-card--${tx.status} ${actionProps.canEdit ? 'clickable-row' : ''}`} 
+        aria-label={`Giao dịch: ${tx.content}`}
+        onClick={() => actionProps.canEdit && actionProps.onEdit(tx)}
+    >
         {/* Row 1: date + badge + amount */}
         <div className="tx-card__top">
             <div className="tx-card__meta">
@@ -131,7 +135,10 @@ TxCard.displayName = 'TxCard';
 
 // ─── DESKTOP: Table cells ──────────────────────────────────────
 const TableRow = memo(({ tx, categoryName, partnerName, actionProps }) => (
-    <tr className={`tx-row tx-row--${tx.status}`}>
+    <tr 
+        className={`tx-row tx-row--${tx.status} ${actionProps.canEdit ? 'clickable-row' : ''}`}
+        onClick={() => actionProps.canEdit && actionProps.onEdit(tx)}
+    >
         <td className="tx-date">{format(new Date(tx.date), 'dd/MM/yyyy')}</td>
         <td className="tx-voucher">{tx.voucherCode || '—'}</td>
         <td><TypeBadge type={tx.type} /></td>

@@ -125,7 +125,7 @@ const DataManagementTable = ({
                             /* Edit form (mobile) */
                             <EditFields key={item.id} {...editProps} />
                         ) : (
-                            <div key={item.id} className="dm-item-card" role="listitem">
+                            <div key={item.id} className="dm-item-card" role="listitem" onClick={() => !readOnly && handleStartEdit(item)}>
                                 <div className="dm-item-info">
                                     <span className="dm-item-name">
                                         {displayValue(columns[0], item)}
@@ -140,7 +140,7 @@ const DataManagementTable = ({
                                 {!readOnly && (
                                     <div className="dm-item-actions">
                                         <button
-                                            onClick={() => handleStartEdit(item)}
+                                            onClick={(e) => { e.stopPropagation(); handleStartEdit(item); }}
                                             className="btn-icon text-blue"
                                             aria-label={`Sửa ${displayValue(columns[0], item)}`}
                                             title="Sửa"
@@ -148,7 +148,7 @@ const DataManagementTable = ({
                                             <Edit size={16} aria-hidden="true" />
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(item.id)}
+                                            onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
                                             className="btn-icon text-red"
                                             aria-label={`Xóa ${displayValue(columns[0], item)}`}
                                             title="Xóa"
@@ -210,7 +210,7 @@ const DataManagementTable = ({
 
                         {/* Data rows */}
                         {data.map(item => (
-                            <tr key={item.id}>
+                            <tr key={item.id} className={!readOnly ? "clickable-row" : ""} onClick={() => !readOnly && handleStartEdit(item)}>
                                 {editingId === item.id ? (
                                     <>
                                         {columns.map(col => (
@@ -252,8 +252,8 @@ const DataManagementTable = ({
                                         <td>
                                             {!readOnly && (
                                                 <div className="action-buttons">
-                                                    <button onClick={() => handleStartEdit(item)} className="btn-icon text-blue" title="Sửa"  aria-label={`Sửa ${displayValue(columns[0], item)}`}><Edit   size={16} /></button>
-                                                    <button onClick={() => handleDelete(item.id)} className="btn-icon text-red"  title="Xóa" aria-label={`Xóa ${displayValue(columns[0], item)}`}><Trash2 size={16} /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); handleStartEdit(item); }} className="btn-icon text-blue" title="Sửa"  aria-label={`Sửa ${displayValue(columns[0], item)}`}><Edit   size={16} /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }} className="btn-icon text-red"  title="Xóa" aria-label={`Xóa ${displayValue(columns[0], item)}`}><Trash2 size={16} /></button>
                                                 </div>
                                             )}
                                         </td>

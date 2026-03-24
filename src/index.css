@@ -131,3 +131,12 @@ h1, h2, h3, h4 {
     flex-direction: column;
   }
 }
+
+/* ── Utilities ────────────────────────────────────────────── */
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.clickable-row:hover {
+  background-color: rgba(37,99,235,0.05) !important;
+}

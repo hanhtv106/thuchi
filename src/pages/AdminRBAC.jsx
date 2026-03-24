@@ -201,7 +201,7 @@ const AdminRBAC = () => {
                                 <div className="rbac-card-list" role="list">
                                     {users.length === 0 && <p className="text-center">Chưa có người dùng nào</p>}
                                     {users.map(u => (
-                                        <div key={u.id} className="rbac-user-card" role="listitem">
+                                        <div key={u.id} className="rbac-user-card" role="listitem" onClick={() => handleEditUser(u)}>
                                             <div className="rbac-user-avatar" aria-hidden="true">{initials(u.fullName)}</div>
                                             <div className="rbac-user-info">
                                                 <span className="rbac-user-name">{u.fullName || u.username}</span>
@@ -211,8 +211,8 @@ const AdminRBAC = () => {
                                                 </div>
                                             </div>
                                             <div className="rbac-card-actions">
-                                                <button onClick={() => handleEditUser(u)} className="btn-icon-action" title="Sửa"><Edit size={16} /></button>
-                                                <button onClick={() => handleDeleteUser(u.id)} className="btn-icon-action text-red" title="Xóa"><Trash2 size={16} /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); handleEditUser(u); }} className="btn-icon-action" title="Sửa"><Edit size={16} /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); handleDeleteUser(u.id); }} className="btn-icon-action text-red" title="Xóa"><Trash2 size={16} /></button>
                                             </div>
                                         </div>
                                     ))}
@@ -229,14 +229,14 @@ const AdminRBAC = () => {
                                     </thead>
                                     <tbody>
                                         {users.map(u => (
-                                            <tr key={u.id}>
+                                            <tr key={u.id} className="clickable-row" onClick={() => handleEditUser(u)}>
                                                 <td>{u.username}</td>
                                                 <td>{u.email}</td>
                                                 <td>{u.fullName}</td>
                                                 <td><span className="role-badge">{roles.find(r => r.id === u.role)?.name || u.role}</span></td>
                                                 <td style={{ display: 'flex', gap: 4 }}>
-                                                    <button onClick={() => handleEditUser(u)} className="btn-icon-action" title="Sửa"><Edit size={15} /></button>
-                                                    <button onClick={() => handleDeleteUser(u.id)} className="btn-icon-action text-red" title="Xóa"><Trash2 size={15} /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); handleEditUser(u); }} className="btn-icon-action" title="Sửa"><Edit size={15} /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); handleDeleteUser(u.id); }} className="btn-icon-action text-red" title="Xóa"><Trash2 size={15} /></button>
                                                 </td>
                                             </tr>
                                         ))}
@@ -303,15 +303,15 @@ const AdminRBAC = () => {
                             <>
                                 <div className="rbac-card-list" role="list">
                                     {roles.map(r => (
-                                        <div key={r.id} className="rbac-user-card" role="listitem">
+                                        <div key={r.id} className="rbac-user-card" role="listitem" onClick={() => handleEditRole(r)}>
                                             <div className="rbac-user-info">
                                                 <span className="rbac-user-name">{r.name}</span>
                                                 <span className="rbac-user-email">{r.id}</span>
                                                 {r.description && <span className="rbac-user-email">{r.description}</span>}
                                             </div>
                                             <div className="rbac-card-actions">
-                                                <button onClick={() => handleEditRole(r)} className="btn-icon-action" title="Sửa"><Edit size={16} /></button>
-                                                <button onClick={() => handleDeleteRole(r.id)} className="btn-icon-action text-red" title="Xóa"><Trash2 size={16} /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); handleEditRole(r); }} className="btn-icon-action" title="Sửa"><Edit size={16} /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); handleDeleteRole(r.id); }} className="btn-icon-action text-red" title="Xóa"><Trash2 size={16} /></button>
                                             </div>
                                         </div>
                                     ))}
@@ -325,13 +325,13 @@ const AdminRBAC = () => {
                                     </thead>
                                     <tbody>
                                         {roles.map(r => (
-                                            <tr key={r.id}>
+                                            <tr key={r.id} className="clickable-row" onClick={() => handleEditRole(r)}>
                                                 <td><code>{r.id}</code></td>
                                                 <td>{r.name}</td>
                                                 <td>{r.description}</td>
                                                 <td style={{ display: 'flex', gap: 4 }}>
-                                                    <button onClick={() => handleEditRole(r)} className="btn-icon-action" title="Sửa"><Edit size={15} /></button>
-                                                    <button onClick={() => handleDeleteRole(r.id)} className="btn-icon-action text-red" title="Xóa"><Trash2 size={15} /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); handleEditRole(r); }} className="btn-icon-action" title="Sửa"><Edit size={15} /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); handleDeleteRole(r.id); }} className="btn-icon-action text-red" title="Xóa"><Trash2 size={15} /></button>
                                                 </td>
                                             </tr>
                                         ))}
