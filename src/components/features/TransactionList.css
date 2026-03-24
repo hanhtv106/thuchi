@@ -2,10 +2,9 @@
    TransactionList.css  —  Mobile-first: card view → table view
    ═══════════════════════════════════════════════════════════════ */
 
-/* ─── Wrapper ─────────────────────────────────────────────────── */
-.transaction-list {
-  /* parent .tx-table-section handles border/shadow */
-}
+/* parent .tx-table-section handles border/shadow */
+
+
 
 /* ═══════════════════════════════════════════════════════════════
    MOBILE — Card view (default, < 768px)

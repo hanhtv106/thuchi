@@ -198,18 +198,29 @@ const TransactionForm = ({ onClose, initialData }) => {
 
     const filteredCategories = categories.filter(c => c.type === formData.type);
 
+    // react-select styles aligned with design system
     const selectStyles = {
-        control: (base) => ({
+        control: (base, state) => ({
             ...base,
-            minHeight: '38px',
-            borderRadius: '0.375rem',
-            borderColor: '#d1d5db',
-            boxShadow: 'none',
-            '&:hover': { borderColor: '#9ca3af' }
+            minHeight: '44px',
+            borderRadius: '10px',
+            borderWidth: '1.5px',
+            borderColor: state.isFocused ? '#2563eb' : '#e2e8f0',
+            boxShadow: state.isFocused ? '0 0 0 3px rgba(37,99,235,0.12)' : 'none',
+            fontSize: '1rem',
+            '&:hover': { borderColor: '#94a3b8' }
         }),
-        valueContainer: (base) => ({ ...base, padding: '0 8px' }),
-        input: (base) => ({ ...base, margin: '0', padding: '0' }),
-        menu: (base) => ({ ...base, zIndex: 9999 })
+        valueContainer: (base) => ({ ...base, padding: '0 12px' }),
+        input:          (base) => ({ ...base, margin: '0', padding: '0', fontSize: '1rem' }),
+        option: (base, state) => ({
+            ...base,
+            fontSize: '0.9375rem',
+            padding: '10px 12px',
+            background: state.isSelected ? '#2563eb' : state.isFocused ? '#eff6ff' : 'white',
+            color: state.isSelected ? '#fff' : '#0f172a',
+        }),
+        menu:           (base) => ({ ...base, zIndex: 9999, borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }),
+        placeholder:    (base) => ({ ...base, color: '#94a3b8', fontSize: '0.9375rem' }),
     };
 
     const categoryOptions = filteredCategories.map(cat => ({ value: cat.id, label: cat.name }));
@@ -223,7 +234,7 @@ const TransactionForm = ({ onClose, initialData }) => {
     };
 
     return (
-        <div className="modal-overlay">
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label={initialData ? 'Cập nhật giao dịch' : 'Thêm mới giao dịch'}>
             <div className="modal-content">
                 <div className="modal-header">
                     <h3>{initialData ? 'Cập nhật Giao dịch' : 'Thêm mới Giao dịch'}</h3>
