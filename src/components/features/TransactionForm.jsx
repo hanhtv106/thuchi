@@ -260,16 +260,16 @@ const TransactionForm = ({ onClose, initialData }) => {
                         </div>
 
                         <div className="form-group">
-                            <label>Ngày chứng từ (mm/dd/yyyy)</label>
+                            <label>Ngày</label>
                             <input type="date" name="date" value={formData.date} onChange={handleChange} required />
                         </div>
                         <div className="form-group">
-                            <label>Số hoá đơn</label>
+                            <label>Số HĐ</label>
                             <input type="text" name="voucherCode" value={formData.voucherCode} onChange={handleChange} placeholder="Tùy chọn" />
                         </div>
                     </div>
 
-                    <div className="form-row" style={{ display: 'flex', gap: '1rem' }}>
+                    <div className="form-row">
                         <div className="form-group" style={{ flex: 2 }}>
                             <label>Hạng mục <span style={{ color: 'red' }}>*</span></label>
                             <Select

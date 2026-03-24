@@ -140,16 +140,25 @@
     margin: 0.25rem 0 -0.25rem;
 }
 
-/* ─── Row: 1 col mobile → multi-col tablet ───────────────────── */
+/* ─── Row: 2 cột từ mobile ────────────────────────────────────── */
 .form-row {
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;          /* was 0.75rem */
+    flex-direction: row;  /* 2-col on ALL screens */
+    gap: 0.5rem;
+    align-items: flex-start;
 }
 
-@media (min-width: 560px) {
-    .form-row               { flex-direction: row; gap: 1rem; }
-    .form-row.three-cols > * { flex: 1; }
+/* Hàng 1 trường full-width (textarea, attachments...) */
+.form-row--solo {
+    flex-direction: column;
+}
+
+/* three-cols: mỗi trường bằng nhau */
+.form-row.three-cols > * { flex: 1; min-width: 0; }
+
+/* Desktop: tăng khoảng cách */
+@media (min-width: 640px) {
+    .form-row { gap: 1rem; }
 }
 
 /* ─── Field group ────────────────────────────────────────────── */
