@@ -408,23 +408,23 @@ const TransactionForm = ({ onClose, initialData }) => {
                         />
                     </div>
 
-                    {/* ── Row 7: Người nộp/nhận | Đối tác ──────── */}
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label>{formData.type === 'income' ? 'Người nộp' : 'Người nhận'}</label>
-                            <input type="text" name="receiver" value={formData.receiver} onChange={handleChange} />
-                        </div>
-                        <div className="form-group">
-                            <label>{formData.type === 'income' ? 'Khách hàng' : 'Nhà cung cấp'}</label>
-                            <Select
-                                value={partnerOptions.find(o => o.value === formData.partnerId) || null}
-                                onChange={(selected) => handleSelectChange('partnerId', selected)}
-                                options={partnerOptions}
-                                placeholder="-- Chọn đối tác --"
-                                isClearable
-                                styles={selectStyles}
-                            />
-                        </div>
+                    {/* ── Row 7: Đối tác ──────── */}
+                    <div className="form-group" style={{ marginBottom: '1rem' }}>
+                        <label>{formData.type === 'income' ? 'Khách hàng' : 'Nhà cung cấp'}</label>
+                        <Select
+                            value={partnerOptions.find(o => o.value === formData.partnerId) || null}
+                            onChange={(selected) => handleSelectChange('partnerId', selected)}
+                            options={partnerOptions}
+                            placeholder="-- Chọn đối tác --"
+                            isClearable
+                            styles={selectStyles}
+                        />
+                    </div>
+
+                    {/* ── Row 7.1: Người nộp/nhận ──────── */}
+                    <div className="form-group" style={{ marginBottom: '1rem' }}>
+                        <label>{formData.type === 'income' ? 'Người nộp' : 'Người nhận'}</label>
+                        <input type="text" name="receiver" value={formData.receiver} onChange={handleChange} />
                     </div>
 
                     {/* ── Row 8: Số HĐ (gần đính kèm) ─────────── */}
