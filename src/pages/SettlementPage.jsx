@@ -113,6 +113,70 @@ const SettlementPage = () => {
                 </div>
             </div>
 
+            {/* Mobile Card Layout */}
+            <div className="settlement-card-list" role="list">
+                {filteredTransactions.map(tx => (
+                    <div key={tx.id} 
+                         className={`settlement-card ${hasPermission('SETTLEMENT_MANAGE') ? 'clickable-row' : ''}`}
+                         onClick={() => {
+                             if(hasPermission('SETTLEMENT_MANAGE')) {
+                                 settlementStatus === 'unsettled' ? handleSettle(tx.id) : handleUnsettle(tx.id);
+                             }
+                         }}
+                         role="listitem"
+                    >
+                        <div className="settlement-card-header">
+                            <span className="settlement-card-date">{format(new Date(tx.date), 'dd/MM/yyyy')}</span>
+                            <span className={`badge ${tx.type}`}>
+                                {tx.type === 'income' ? 'Thu' : 'Chi'}
+                            </span>
+                        </div>
+                        <div className="settlement-card-body">
+                            <div className="settlement-card-content">{tx.content}</div>
+                            <div className="settlement-card-sub">
+                                <span>{getCategoryName(tx.categoryId)}</span>
+                                <span> &bull; </span>
+                                <span>{tx.partner || tx.receiver || '-'}</span>
+                            </div>
+                        </div>
+                        <div className="settlement-card-footer">
+                            <div className="settlement-card-amount">
+                                <span className={`amount ${tx.type}`} style={{ fontWeight: 'bold' }}>
+                                    {new Intl.NumberFormat('vi-VN').format(tx.amount)} đ
+                                </span>
+                            </div>
+                            {hasPermission('SETTLEMENT_MANAGE') && (
+                                <div className="settlement-card-actions">
+                                    {settlementStatus === 'unsettled' ? (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleSettle(tx.id); }}
+                                            className="btn btn-primary btn-sm"
+                                            title="Đánh dấu đã tất toán"
+                                        >
+                                            <CheckCircle size={14} style={{ marginRight: 4 }} /> Tất toán
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleUnsettle(tx.id); }}
+                                            className="btn btn-secondary btn-sm text-red"
+                                            title="Hủy tất toán"
+                                        >
+                                            <RotateCcw size={14} style={{ marginRight: 4 }} /> Hủy
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ))}
+                {filteredTransactions.length === 0 && (
+                    <div className="settlement-empty">
+                        {settlementStatus === 'unsettled' ? 'Không có khoản nào chưa tất toán.' : 'Chưa có khoản nào đã tất toán.'}
+                    </div>
+                )}
+            </div>
+
+            {/* Desktop Table Layout */}
             <div className="table-container">
                 <table className="data-table">
                     <thead>
